@@ -1,0 +1,16 @@
+
+.modal {
+	textarea {
+		height: 400px;
+	}
+	.form-filename {
+		display: inline-block;
+		span {
+			display: none;
+		}
+		input {
+			display: none;
+			width: 120px;
+		}
+	}
+}

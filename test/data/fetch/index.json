@@ -1,0 +1,85 @@
+{
+    "data": {
+        "total": 5,
+        "result": [
+            {
+                "pointId": 90,
+                "matchUrlId": 0,
+                "pointName": "rexiao",
+                "pageUrl": "https://www.gomeplus.com/",
+                "selector": "",
+                "privateParam": "",
+                "pattern": "",
+                "publicParam": "",
+                "platform": "PC",
+                "createTime": 1479707882000,
+                "updateTime": 1479707882000,
+                "pointParam": "",
+                "_point_id": 90
+            },
+            {
+                "pointId": 91,
+                "matchUrlId": 0,
+                "pointName": "index",
+                "pageUrl": "https://www.gomeplus.com/",
+                "selector": "html > body > div:first-child > div.menu > div > div.nav > a:first-child",
+                "privateParam": "",
+                "pattern": "",
+                "publicParam": "",
+                "platform": "PC",
+                "createTime": 1479708552000,
+                "updateTime": 1479708552000,
+                "pointParam": "",
+                "_point_id": 91
+            },
+            {
+                "pointId": 94,
+                "matchUrlId": 1,
+                "pointName": "首页-美信推荐",
+                "pageUrl": "https://www.gomeplus.com/",
+                "selector": "html > body > div.wrap-box > div.index-popular > div.index-popular-list > ul > li:first-child > div > div.img > a > img",
+                "privateParam": "",
+                "pattern": "https://www.gomeplus.com/",
+                "publicParam": "area=mxtj",
+                "platform": "PC",
+                "createTime": 1479714045000,
+                "updateTime": 1479714045000,
+                "pointParam": "area=mxtj",
+                "_point_id": 94
+            },
+            {
+                "pointId": 95,
+                "matchUrlId": 1,
+                "pointName": "美信推荐banner2",
+                "pageUrl": "https://www.gomeplus.com/",
+                "selector": "html > body > div.wrap-box > div.index-popular > div.index-popular-list > ul > li:first-child+li > div > div.img > a > img",
+                "privateParam": "",
+                "pattern": "https://www.gomeplus.com/",
+                "publicParam": "area=mxtj",
+                "platform": "PC",
+                "createTime": 1479714063000,
+                "updateTime": 1479714063000,
+                "pointParam": "area=mxtj",
+                "_point_id": 95
+            },
+            {
+                "pointId": 97,
+                "matchUrlId": 1,
+                "pointName": "haodian",
+                "pageUrl": "https://www.gomeplus.com/",
+                "selector": "html > body > div:first-child > div.menu > div > div.nav > a:first-child+a+a+a",
+                "privateParam": "",
+                "pattern": "https://www.gomeplus.com/",
+                "publicParam": "area=mxtj",
+                "platform": "PC",
+                "createTime": 1479722205000,
+                "updateTime": 1479722205000,
+                "pointParam": "area=mxtj",
+                "_point_id": 97
+            }
+        ]
+    },
+    "code": "200",
+    "msg": "",
+    "iserror": "0"
+}

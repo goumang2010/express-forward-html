@@ -1,0 +1,70 @@
+@import '../../../node_modules/bootstrap/dist/css/bootstrap';
+@import '_partial/inject.scss';
+@import '_partial/modal.scss';
+
+section {
+	margin-top: 50px;
+}
+
+
+
+.left-column {
+    width: 400px;
+    float: left;
+    height: 350px;
+    overflow: hidden;
+    border: 1px #ccc solid;
+    padding: 0;
+    overflow-y: auto;
+    .sidebar-box {
+    	padding: 5px;
+    }
+    .sidebar-box ul {
+    	padding-left: 0;
+    	list-style: none;
+        li {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            img {
+                margin-left: 10px;
+                position: relative;
+                right: 10px;
+            }
+        }
+    }
+}
+
+.right-column {
+	float: right;
+	width: calc(100% - 450px);
+	.url-input {
+		// margin-left: 20px;
+	}
+    .gotoBtn {
+        float: right;
+    }
+    .addBtn {
+        float: right;
+        margin-right: 10px;
+    }
+    .logbox {
+        width: 100%;
+        max-height: 220px;
+        margin-top: 50px;
+        ul {
+            max-height: 220px;
+            margin-bottom: 0;
+            overflow-y: auto;
+            li {
+                a {
+                    cursor: pointer;
+                    margin-left: 5px;
+                }
+            }
+        }
+        .clear {
+            cursor: pointer;
+        }
+    }    
+}

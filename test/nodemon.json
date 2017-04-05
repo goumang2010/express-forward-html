@@ -1,0 +1,10 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    "node_modules/*",
+    "views/src/*"
+  ],
+  "verbose": true,
+  "ext": "js"
+}
