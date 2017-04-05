@@ -1,0 +1,23 @@
+{
+	"name": "express-forward-html",
+	"description": "forward html",
+	"version": "1.0.0",
+	"license": "MIT",
+	"devDependencies": {
+		"babel-cli": "^6.24.0",
+		"babel-eslint": "^7.2.1",
+		"babel-preset-latest": "^6.24.0",
+		"eslint": "^3.19.0",
+		"eslint-config-standard": "^7.1.0",
+		"eslint-plugin-standard": "^2.1.1"
+	},
+	"scripts": {
+		"lint": "./node_modules/.bin/eslint index.js --fix",
+		"build": "./node_modules/.bin/babel src -d dist",
+		"test": "./test/node_modules/.bin/nodemon ./test/app.js"
+	},
+	"dependencies": {
+		"eslint-plugin-promise": "^3.5.0",
+		"node-fetch": "^1.6.3"
+	}
+}
