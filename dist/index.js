@@ -110,7 +110,7 @@ function forwardHtml(prefix, filterHtml) {
                 });
             }
             // 添加自定义脚本
-            var proxytext = '<script>(' + xhrProxy + ')(\'' + url + '\', \'' + platform + '\', \'' + origin + '\', \'' + prefix + '\');</script>';
+            var proxytext = '<script>(' + xhrProxy + '(\'' + url + '\', \'' + platform + '\', \'' + origin + '\', \'' + prefix + '\'))</script>';
             res.end(filterHtml(html).replace('<head>', '<head>' + proxytext).replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"\s]+?)\s*"/g, function (m, p1, p2) {
                 if (p2.indexOf('.') === 0) {
                     return p1 + '="' + origin + '/' + p2 + '"';
