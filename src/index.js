@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const xhrProxy = fs.readFileSync(path.resolve(__dirname, './script/xhr-proxy.js'), {
     encoding: 'utf8'
-});
+}).replace(`'use strict';`, '');
 const utils = require('./utils');
 const COOKIE_KEY = 'forward_html';
 const emptyFunc = x => x;
