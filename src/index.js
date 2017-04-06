@@ -9,19 +9,27 @@ const utils = require('./utils');
 const COOKIE_KEY = 'forward_html';
 const emptyFunc = x => x;
 module.exports = function forward({
+    router,
     prefix = '/__forward',
     filterHtml = emptyFunc,
     filterCookie = emptyFunc,
     filterJs = emptyFunc
 } = {}) {
-    return function(req, res, next) {
-        const app = req.app;
-        // const socket = req.socket;
-        app.get(`${prefix}/html`, forwardHtml(prefix, filterHtml));
-        app.all(`${prefix}/ajax/*`, forwardAjax(prefix, filterCookie));
-        app.get(`${prefix}/js`, forwardJs(prefix, filterCookie, filterJs));
-        next();
-    };
+    const bindRouter = function(router) {
+        if (router && router.all) {
+            router.get(`${prefix}/html`, forwardHtml(prefix, filterHtml));
+            router.all(`${prefix}/ajax/*`, forwardAjax(prefix, filterCookie));
+            router.get(`${prefix}/js`, forwardJs(prefix, filterCookie, filterJs));
+        }
+    }
+    if (router) {
+        bindRouter(router);
+    } else {
+        return function(req, res, next) {
+            bindRouter(req.app);
+            next();
+        };
+    }
 }
 
 function forwardHtml(prefix, filterHtml) {
