@@ -26,7 +26,7 @@
     "scripts": {
         "lint": "./node_modules/.bin/eslint index.js --fix",
         "build": "./node_modules/.bin/babel src -d dist",
-        "test": "./test/node_modules/.bin/nodemon ./test/app.js"
+        "test": "node test/node_modules/nodemon/bin/nodemon.js ./test/app.js"
     },
     "dependencies": {
         "eslint-plugin-promise": "^3.5.0",
