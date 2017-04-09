@@ -103,12 +103,6 @@ function forwardHtml(prefix, filterHtml) {
             var time = new Date();
             time.setTime(Date.now() + 86400000);
             res.append('Set-Cookie', COOKIE_KEY + '=' + url + ';expires=' + time.toUTCString());
-            // 移动端移除头部script，防止iframe无法正常渲染
-            if (mobile) {
-                html = html.replace(/^[\s\S]+?(<!DOCTYPE)/mi, function (m, p1) {
-                    return p1;
-                });
-            }
             // 添加自定义脚本
             var proxytext = '<script>(' + xhrProxy + '(\'' + url + '\', \'' + platform + '\', \'' + origin + '\', \'' + prefix + '\'))</script>';
             res.append('Content-Type', 'text/html; charset=utf-8');
