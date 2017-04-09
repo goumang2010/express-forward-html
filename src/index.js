@@ -97,6 +97,7 @@ function forwardHtml(prefix, filterHtml) {
             }
             // 添加自定义脚本
             let proxytext = `<script>(${xhrProxy}('${url}', '${platform}', '${origin}', '${prefix}'))</script>`;
+            res.append('Content-Type', 'text/html; charset=utf-8');
             res.end(filterHtml(html)
                 .replace('<head>', '<head>' + proxytext)
                 .replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"\s]+?)\s*"/g, function(m, p1, p2) {
