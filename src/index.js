@@ -9,26 +9,19 @@ const utils = require('./utils');
 const COOKIE_KEY = 'forward_html';
 const emptyFunc = x => x;
 module.exports = function forward({
-    router,
     prefix = '/__forward',
     filterHtml = emptyFunc,
     filterCookie = emptyFunc,
     filterJs = emptyFunc
 } = {}) {
-    const bindRouter = function(router) {
+    return function(router) {
         if (router && router.all) {
             router.get(`${prefix}/html`, forwardHtml(prefix, filterHtml));
             router.all(`${prefix}/ajax/*`, forwardAjax(prefix, filterCookie));
             router.get(`${prefix}/js`, forwardJs(prefix, filterCookie, filterJs));
+        } else {
+            throw new TypeError('The param is not express instance or router!');
         }
-    }
-    if (router) {
-        bindRouter(router);
-    } else {
-        return function(req, res, next) {
-            bindRouter(req.app);
-            next();
-        };
     }
 }
 
