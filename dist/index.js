@@ -13,7 +13,6 @@ var emptyFunc = function emptyFunc(x) {
 };
 module.exports = function forward() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        router = _ref.router,
         _ref$prefix = _ref.prefix,
         prefix = _ref$prefix === undefined ? '/__forward' : _ref$prefix,
         _ref$filterHtml = _ref.filterHtml,
@@ -23,21 +22,15 @@ module.exports = function forward() {
         _ref$filterJs = _ref.filterJs,
         filterJs = _ref$filterJs === undefined ? emptyFunc : _ref$filterJs;
 
-    var bindRouter = function bindRouter(router) {
+    return function (router) {
         if (router && router.all) {
             router.get(prefix + '/html', forwardHtml(prefix, filterHtml));
             router.all(prefix + '/ajax/*', forwardAjax(prefix, filterCookie));
             router.get(prefix + '/js', forwardJs(prefix, filterCookie, filterJs));
+        } else {
+            throw new TypeError('The param is not express instance or router!');
         }
     };
-    if (router) {
-        bindRouter(router);
-    } else {
-        return function (req, res, next) {
-            bindRouter(req.app);
-            next();
-        };
-    }
 };
 
 function forwardHtml(prefix, filterHtml) {
