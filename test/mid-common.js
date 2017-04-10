@@ -35,7 +35,7 @@ module.exports = function(app) {
     }));
     //parse application/json
     app.use(bodyParser.json());
-    app.use(forward({
+    forward({
         filterFunc(html) {
             // 移除统计脚本
             return html.replace(/<script[\S]+?uba-sdk[\S]+?<\/script>/, '');
@@ -48,7 +48,7 @@ module.exports = function(app) {
             return js && js.replace(/\.assign\(([^,]+?)\)/g, '.$assign($1)');
         },
         prefix: '/databp'
-    }));
+    })(app);
     routers.forEach(function(router) {
         app.use(router);
     });
