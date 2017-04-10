@@ -48,8 +48,8 @@ function forwardHtml(prefix, filterHtml) {
             options.redirect = 'manual';
             // 先请求一次，探查真实地址
             fetchProcess().then(function(result) {
-                let relocation;
-                if ((relocation = result.headers._headers) && (relocation = relocation.location) && (relocation = relocation[0]) && (relocation !== url)) {
+                let relocation = result.headers.get('location');
+                if (relocation !== url) {
                     url = relocation;
                     if (!mobile) {
                         platform = 'PC';
