@@ -127,8 +127,9 @@ function forwardAjax(prefix, filterCookie) {
             headers: newheaders,
             credentials: 'include'
         };
-        if (body) {
-            for (let key in body) {
+        let bodykeys = Object.keys(body);
+        if (body && bodykeys.length) {
+            for (let key of bodykeys) {
                 let oldval = body[key]
                 body[key] = encodeURI(oldval);
             }
