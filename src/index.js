@@ -122,6 +122,11 @@ function forwardAjax(prefix, filterCookie) {
             'host': host.replace(/https?:\/\//, ''),
             'referer': encodeURI(htmlurl)
         });
+        const option = {
+            method,
+            headers: newheaders,
+            credentials: 'include'
+        };
         if (body) {
             for (let key in body) {
                 let oldval = body[key]
@@ -136,13 +141,8 @@ function forwardAjax(prefix, filterCookie) {
             } else {
                 body = JSON.stringify(body);
             }
+            option.body = body;
         }
-        let option = {
-            method,
-            headers: newheaders,
-            body,
-            credentials: 'include'
-        };
         fetch(newurl, option, nodeOptions)
             .then(function(result) {
                 return result.text();
