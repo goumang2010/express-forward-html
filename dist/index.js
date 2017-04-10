@@ -56,8 +56,8 @@ function forwardHtml(prefix, filterHtml) {
             options.redirect = 'manual';
             // 先请求一次，探查真实地址
             fetchProcess().then(function (result) {
-                var relocation = void 0;
-                if ((relocation = result.headers._headers) && (relocation = relocation.location) && (relocation = relocation[0]) && relocation !== url) {
+                var relocation = result.headers.get('location');
+                if (relocation !== url) {
                     url = relocation;
                     if (!mobile) {
                         platform = 'PC';
@@ -132,27 +132,50 @@ function forwardAjax(prefix, filterCookie) {
             'host': host.replace(/https?:\/\//, ''),
             'referer': encodeURI(htmlurl)
         });
-        if (body) {
-            for (var key in body) {
-                var oldval = body[key];
-                body[key] = encodeURI(oldval);
+        var option = {
+            method: method,
+            headers: newheaders,
+            credentials: 'include'
+        };
+        var bodykeys = Object.keys(body);
+        if (body && bodykeys.length) {
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = bodykeys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var _key = _step.value;
+
+                    var oldval = body[_key];
+                    body[_key] = encodeURI(oldval);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
             }
+
             if (newheaders['content-type'] && newheaders['content-type'].indexOf('x-www-form-urlencoded') > -1) {
                 var qstr = '';
-                for (var _key in body) {
-                    qstr += _key + '=' + body[_key] + '&';
+                for (var key in body) {
+                    qstr += key + '=' + body[key] + '&';
                 }
                 body = qstr.slice(0, -1);
             } else {
                 body = JSON.stringify(body);
             }
+            option.body = body;
         }
-        var option = {
-            method: method,
-            headers: newheaders,
-            body: body,
-            credentials: 'include'
-        };
         fetch(newurl, option, nodeOptions).then(function (result) {
             return result.text();
         }).then(function (json) {
