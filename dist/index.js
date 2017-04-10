@@ -1,6 +1,6 @@
 'use strict';
 
-var fetch = require('node-fetch');
+var fetch = require('node-fetch-custom');
 var fs = require('fs');
 var path = require('path');
 var xhrProxy = fs.readFileSync(path.resolve(__dirname, './script/xhr-proxy.js'), {
@@ -10,6 +10,9 @@ var utils = require('./utils');
 var COOKIE_KEY = 'forward_html';
 var emptyFunc = function emptyFunc(x) {
     return x;
+};
+var nodeOptions = {
+    rejectUnauthorized: false
 };
 module.exports = function forward() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
@@ -74,7 +77,7 @@ function forwardHtml(prefix, filterHtml) {
         }
 
         function fetchProcess() {
-            return fetch(encodeURI(url), options);
+            return fetch(encodeURI(url), options, nodeOptions);
         }
 
         function postProcess(result) {
@@ -150,7 +153,7 @@ function forwardAjax(prefix, filterCookie) {
             body: body,
             credentials: 'include'
         };
-        fetch(newurl, option).then(function (result) {
+        fetch(newurl, option, nodeOptions).then(function (result) {
             return result.text();
         }).then(function (json) {
             res.send(json);
@@ -175,7 +178,7 @@ function forwardJs(prefix, filterCookie, filterJs) {
             headers: newheaders,
             cookie: filterCookie(headers.cookie),
             credentials: 'include'
-        }).then(function (result) {
+        }, nodeOptions).then(function (result) {
             return result.text();
         }).then(function (js) {
             res.send(filterJs(js));
