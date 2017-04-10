@@ -30,6 +30,6 @@
     },
     "dependencies": {
         "eslint-plugin-promise": "^3.5.0",
-        "node-fetch": "^1.6.3"
+        "node-fetch-custom": "^1.1.0"
     }
 }
