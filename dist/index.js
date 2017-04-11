@@ -81,8 +81,8 @@ function forwardHtml(prefix, filterHtml) {
         }
 
         function postProcess(result) {
-            var rawcookie = result.headers;
-            if ((rawcookie = rawcookie._headers) && (rawcookie = rawcookie['set-cookie'])) {
+            var rawcookie = result.headers.get('set-cookie');
+            if (rawcookie) {
                 res.append('Set-Cookie', rawcookie);
             }
             return Promise.resolve(result.text()).then(function (html) {
