@@ -15,11 +15,18 @@ module.exports = function forward({
     prefix = '/__forward',
     filterHtml = emptyFunc,
     filterCookie = emptyFunc,
-    filterJs = emptyFunc
+    filterJs = emptyFunc,
+    script
 } = {}) {
+    let scriptType = typeof script;
+    if (scriptType === 'function') {
+        script = Function.prototype.toString.call(script);
+    } else if (scriptType !== 'string') {
+        throw new TypeError('The param script must be function or string!');
+    }
     return function(router) {
         if (router && router.all) {
-            router.get(`${prefix}/html`, forwardHtml(prefix, filterHtml));
+            router.get(`${prefix}/html`, forwardHtml(prefix, script, filterHtml));
             router.all(`${prefix}/ajax/*`, forwardAjax(prefix, filterCookie));
             router.get(`${prefix}/js`, forwardJs(prefix, filterCookie, filterJs));
         } else {
@@ -28,7 +35,7 @@ module.exports = function forward({
     }
 }
 
-function forwardHtml(prefix, filterHtml) {
+function forwardHtml(prefix, script, filterHtml) {
     return function(req, res, next) {
         let url = req.query.url;
         let options = {
@@ -86,7 +93,7 @@ function forwardHtml(prefix, filterHtml) {
             time.setTime(Date.now() + 86400000);
             res.append('Set-Cookie', `${COOKIE_KEY}=${url};expires=${time.toUTCString()}`);
             // 添加自定义脚本
-            let proxytext = `<script>(${xhrProxy}('${url}', '${platform}', '${origin}', '${prefix}'))</script>`;
+            let proxytext = `<script>(${xhrProxy}('${url}', '${platform}', '${origin}', '${prefix}', ${script}))</script>`;
             res.append('Content-Type', 'text/html; charset=utf-8');
             res.end(filterHtml(html)
                 .replace('<head>', '<head>' + proxytext)
