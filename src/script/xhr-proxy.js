@@ -1,4 +1,7 @@
-function inject(pageUrl, platform, origin, prefix, extraScript) {
+function inject(urlObj, platform, prefix, extraScript) {
+    let pageUrl = urlObj.href;
+    let protocol = urlObj.protocol;
+    let origin = protocol + urlObj.host;
     if (window.XMLHttpRequest) {
         if (platform === 'H5') {
             Object.defineProperty(window.navigator, 'userAgent', { writable: true, configurable: true, enumerable: true });
@@ -9,12 +12,12 @@ function inject(pageUrl, platform, origin, prefix, extraScript) {
             var args = [].slice.call(arguments);
             //  remove same origin
             url = url.replace(origin, '');
-            if (/https?:\/\//.test(url)) {
-                if (url.match(/\.js\??/)) {
-                    args[1] = `${prefix}/js?url=${encodeURIComponent(url)}`;
-                } else {
-                    args[1] = url;
+            let res;
+            if (res = /^(https?:)?\/\//.test(url)) {
+                if(!res[1]) {
+                    url = protocol + url;
                 }
+                args[1] = `${prefix}/js?url=${encodeURIComponent(url)}`;
             } else {
                 args[1] = `${prefix}/ajax` + (url.indexOf('/') === 0 ? url : '/' + url);
             }
