@@ -17,14 +17,19 @@ module.exports = function forward({
     filterHtml = emptyFunc,
     filterCookie = emptyFunc,
     filterJs = emptyFunc,
-    script
+    script = () => {}
 } = {}) {
-    let scriptType = typeof script;
-    if (scriptType === 'function') {
-        script = Function.prototype.toString.call(script);
-    } else if (scriptType !== 'string') {
-        throw new TypeError('The param script must be function or string!');
+    if (script) {
+        let scriptType = typeof script;
+        if (scriptType === 'function') {
+            script = Function.prototype.toString.call(script);
+        } else if (scriptType !== 'string') {
+            throw new TypeError('The param script must be function or string!');
+        }
+    } else {
+        script = '';
     }
+
     return function(router) {
         if (router && router.all) {
             router.get(`${prefix}/html`, forwardHtml(prefix, script, filterHtml));
