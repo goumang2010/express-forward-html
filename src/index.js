@@ -1,6 +1,7 @@
 'use strict';
 const fetch = require('node-fetch-custom');
 const fs = require('fs');
+const urlLib = require('url');
 const path = require('path');
 const xhrProxy = fs.readFileSync(path.resolve(__dirname, './script/xhr-proxy.js'), {
     encoding: 'utf8'
@@ -87,24 +88,18 @@ function forwardHtml(prefix, script, filterHtml) {
 
         function processHtml(html) {
             // const id = Date.now() + Math.floor(Math.random() * 10000);
+            let urlObj = urlLib.parse(url);
             let origin = url.replace(/\/[^\/]*?$/, '');
-            let host = utils.getHost(origin);
             let time = new Date();
             time.setTime(Date.now() + 86400000);
             res.append('Set-Cookie', `${COOKIE_KEY}=${url};expires=${time.toUTCString()}`);
             // 添加自定义脚本
-            let proxytext = `<script>(${xhrProxy}('${url}', '${platform}', '${origin}', '${prefix}', ${script}))</script>`;
+            let proxytext = `<script>(${xhrProxy}(${JSON.stringify(urlObj)}, '${platform}', '${prefix}', ${script}))</script>`;
             res.append('Content-Type', 'text/html; charset=utf-8');
             res.end(filterHtml(html)
                 .replace('<head>', '<head>' + proxytext)
-                .replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"\s]+?)\s*"/g, function(m, p1, p2) {
-                    if (p2.indexOf('.') === 0) {
-                        return `${p1}="${origin}/${p2}"`;
-                    } else if (p2.indexOf('/') === 0) {
-                        return `${p1}="${host}${p2}"`;
-                    } else {
-                        return `${p1}="${host}/${p2}"`;
-                    }
+                .replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function(m, p1, p2) {
+                    return `${p1}="${urlLib.resolve(url, p2)}"`;
                 })
             );
         }
