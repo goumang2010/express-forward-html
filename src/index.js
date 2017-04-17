@@ -158,7 +158,7 @@ function forwardAjax(prefix, filterCookie) {
 function forwardJs(prefix, filterCookie, filterJs) {
     return function(req, res, next) {
         let {
-            query
+            query, headers
         } = req;
         let method = 'get';
         let newurl = query.url;
