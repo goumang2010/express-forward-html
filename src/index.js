@@ -62,7 +62,7 @@ function forwardHtml(prefix, script, filterHtml) {
             // 先请求一次，探查真实地址
             fetchProcess().then(function(result) {
                 let relocation = result.headers.get('location');
-                if (relocation !== url) {
+                if (relocation && (relocation !== url)) {
                     url = relocation;
                     if (!mobile) {
                         platform = 'PC';
