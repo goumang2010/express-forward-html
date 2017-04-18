@@ -17,7 +17,7 @@ function inject(urlObj, platform, prefix, extraScript) {
                 if(!res[1]) {
                     url = protocol + url;
                 }
-                args[1] = `${prefix}/js?url=${encodeURIComponent(url)}`;
+                args[1] = `${prefix}/static?url=${encodeURIComponent(url)}`;
             } else {
                 args[1] = `${prefix}/ajax` + (url.indexOf('/') === 0 ? url : '/' + url);
             }
