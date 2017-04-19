@@ -33,7 +33,7 @@ module.exports = function forward({
     return function(router) {
         if (router && router.all) {
             router.get(`${prefix}/html`, forwardHtml(prefix, script, filterHtml));
-            router.all(`${prefix}/ajax/*`, forwardAjax(prefix, filterCookie));
+            router.all(`${prefix}/ajax`, forwardAjax(prefix, filterCookie));
             router.get(`${prefix}/static`, forwardStatic(prefix, filterCookie, filterJs));
         } else {
             throw new TypeError('The param is not express instance or router!');
@@ -127,7 +127,7 @@ function forwardAjax(prefix, filterCookie) {
         } = req;
         let host = utils.getHost(htmlurl) || url;
         const urlObj = urlLib.parse(url);
-        if(urlObj.path.match(/^\/ajax\/$/i)) {
+        if(urlObj.path.match(/^\/ajax\/?$/i)) {
             res.status(400).end(`Can not forward null ajax request, HTML url: ${htmlurl||'null'}, XHR url: ${url}`);
             return;
         }
