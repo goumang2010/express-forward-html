@@ -13,7 +13,7 @@ const nodeOptions = {
     rejectUnauthorized: false
 }
 module.exports = function forward({
-    prefix = '/__forward',
+    prefix = '',
     filterHtml = emptyFunc,
     filterCookie = emptyFunc,
     filterJs = emptyFunc,
