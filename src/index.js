@@ -44,6 +44,10 @@ module.exports = function forward({
 function forwardHtml(prefix, script, filterHtml) {
     return function(req, res, next) {
         let url = req.query.url;
+        if(!url) {
+            res.status(400).end(`You must specify an url!`);
+            return;
+        }
         let options = {
             credentials: 'include',
             headers: {
@@ -122,7 +126,13 @@ function forwardAjax(prefix, filterCookie) {
             headers
         } = req;
         let host = utils.getHost(htmlurl) || url;
-        let newurl = url.replace(`${prefix}/ajax`, host);
+        const urlObj = urlLib.parse(url);
+        if(urlObj.path.match(/^\/ajax\/$/i)) {
+            res.status(400).end(`Can not forward null ajax request, HTML url: ${htmlurl||'null'}, XHR url: ${url}`);
+            return;
+        }
+        url = url.replace(`${prefix}/ajax`, host);
+        // remove
         headers.origin && (delete headers.origin);
         let newheaders = Object.assign(headers, {
             'cookie': filterCookie(headers.cookie),
@@ -151,7 +161,7 @@ function forwardAjax(prefix, filterCookie) {
             }
             option.body = body;
         }
-        fetch(newurl, option, nodeOptions)
+        fetch(url, option, nodeOptions)
             .then(function(result) {
                 return result.text();
             }).then(function(json) {
@@ -166,12 +176,16 @@ function forwardStatic(prefix, filterCookie, filterJs) {
             query, headers
         } = req;
         let method = 'get';
-        let newurl = query.url;
-        let host = newurl.match(/https?:\/\/(.+?)\//)[1];
+        let url = query.url;
+        if (!url) {
+            res.status(400).end(`You must specify an url param for ajax static request!`);
+            return;
+        }
+        let host = url.match(/https?:\/\/(.+?)\//)[1];
         let newheaders = {
             host
         }
-        fetch(newurl, {
+        fetch(url, {
                 method,
                 headers: newheaders,
                 cookie: filterCookie(headers.cookie),
@@ -187,6 +201,5 @@ function forwardStatic(prefix, filterCookie, filterJs) {
 
 function handleError(e, res) {
     console.log(e);
-    res.end(e.toString());
-    // next(e);
+    res.status(500).end(`Error happend: ${e.toString()}`);
 }
