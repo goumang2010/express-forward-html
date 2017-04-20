@@ -40,7 +40,7 @@ commonTest({ description: 'production option should work', urls, option: product
 
 function commonTest({ description, option, urls }) {
     describe(description, function() {
-        this.timeout(5000);
+        this.timeout(15000);
         // empty option
         let app = local.app;
         forward(option)(app);
