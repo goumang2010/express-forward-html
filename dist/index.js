@@ -1,7 +1,10 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var fetch = require('node-fetch-custom');
 var fs = require('fs');
+var urlLib = require('url');
 var path = require('path');
 var xhrProxy = fs.readFileSync(path.resolve(__dirname, './script/xhr-proxy.js'), {
     encoding: 'utf8'
@@ -17,28 +20,49 @@ var nodeOptions = {
 module.exports = function forward() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
         _ref$prefix = _ref.prefix,
-        prefix = _ref$prefix === undefined ? '/__forward' : _ref$prefix,
+        prefix = _ref$prefix === undefined ? '' : _ref$prefix,
         _ref$filterHtml = _ref.filterHtml,
         filterHtml = _ref$filterHtml === undefined ? emptyFunc : _ref$filterHtml,
         _ref$filterCookie = _ref.filterCookie,
         filterCookie = _ref$filterCookie === undefined ? emptyFunc : _ref$filterCookie,
         _ref$filterJs = _ref.filterJs,
-        filterJs = _ref$filterJs === undefined ? emptyFunc : _ref$filterJs;
+        filterJs = _ref$filterJs === undefined ? emptyFunc : _ref$filterJs,
+        _ref$script = _ref.script,
+        script = _ref$script === undefined ? function () {} : _ref$script;
+
+    if (script) {
+        var scriptType = typeof script === 'undefined' ? 'undefined' : _typeof(script);
+        if (scriptType === 'function') {
+            script = Function.prototype.toString.call(script);
+        } else if (scriptType !== 'string') {
+            throw new TypeError('The param script must be function or string!');
+        }
+    } else {
+        script = '';
+    }
 
     return function (router) {
         if (router && router.all) {
-            router.get(prefix + '/html', forwardHtml(prefix, filterHtml));
-            router.all(prefix + '/ajax/*', forwardAjax(prefix, filterCookie));
-            router.get(prefix + '/js', forwardJs(prefix, filterCookie, filterJs));
+            router.get(prefix + '/html', forwardHtml(prefix, script, filterHtml));
+            router.all(prefix + '/ajax', forwardAjax(prefix, filterCookie));
+            router.get(prefix + '/static', forwardStatic(prefix, filterCookie, filterJs));
         } else {
             throw new TypeError('The param is not express instance or router!');
         }
     };
 };
 
-function forwardHtml(prefix, filterHtml) {
+function forwardHtml(prefix, script, filterHtml) {
     return function (req, res, next) {
         var url = req.query.url;
+        if (!url) {
+            res.status(400).end('You must specify an url to forward html!');
+            return;
+        }
+        // support local url
+        if (req.headers.host) {
+            url = urlLib.resolve(req.protocol + '://' + req.headers.host, url);
+        }
         var options = {
             credentials: 'include',
             headers: {
@@ -57,7 +81,7 @@ function forwardHtml(prefix, filterHtml) {
             // 先请求一次，探查真实地址
             fetchProcess().then(function (result) {
                 var relocation = result.headers.get('location');
-                if (relocation !== url) {
+                if (relocation && relocation !== url) {
                     url = relocation;
                     if (!mobile) {
                         platform = 'PC';
@@ -81,6 +105,7 @@ function forwardHtml(prefix, filterHtml) {
         }
 
         function postProcess(result) {
+            res.status(result.status);
             var rawcookie = result.headers.get('set-cookie');
             if (rawcookie) {
                 res.append('Set-Cookie', rawcookie);
@@ -94,22 +119,16 @@ function forwardHtml(prefix, filterHtml) {
 
         function processHtml(html) {
             // const id = Date.now() + Math.floor(Math.random() * 10000);
+            var urlObj = urlLib.parse(url);
             var origin = url.replace(/\/[^\/]*?$/, '');
-            var host = utils.getHost(origin);
             var time = new Date();
             time.setTime(Date.now() + 86400000);
             res.append('Set-Cookie', COOKIE_KEY + '=' + url + ';expires=' + time.toUTCString());
             // 添加自定义脚本
-            var proxytext = '<script>(' + xhrProxy + '(\'' + url + '\', \'' + platform + '\', \'' + origin + '\', \'' + prefix + '\'))</script>';
+            var proxytext = '<script>(' + xhrProxy + '(' + JSON.stringify(urlObj) + ', \'' + platform + '\', \'' + prefix + '\', ' + script + '))</script>';
             res.append('Content-Type', 'text/html; charset=utf-8');
-            res.end(filterHtml(html).replace('<head>', '<head>' + proxytext).replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"\s]+?)\s*"/g, function (m, p1, p2) {
-                if (p2.indexOf('.') === 0) {
-                    return p1 + '="' + origin + '/' + p2 + '"';
-                } else if (p2.indexOf('/') === 0) {
-                    return p1 + '="' + host + p2 + '"';
-                } else {
-                    return p1 + '="' + host + '/' + p2 + '"';
-                }
+            res.end(filterHtml(html).replace('<head>', '<head>' + proxytext).replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function (m, p1, p2) {
+                return p1 + '="' + urlLib.resolve(url, p2) + '"';
             }));
         }
     };
@@ -125,7 +144,13 @@ function forwardAjax(prefix, filterCookie) {
             headers = req.headers;
 
         var host = utils.getHost(htmlurl) || url;
-        var newurl = url.replace(prefix + '/ajax', host);
+        var urlObj = urlLib.parse(url);
+        if (urlObj.path.match(/^\/ajax\/?$/i)) {
+            res.status(400).end('Can not forward null ajax request, HTML url: ' + (htmlurl || 'null') + ', XHR url: ' + url);
+            return;
+        }
+        url = url.replace(prefix + '/ajax', host);
+        // remove
         headers.origin && delete headers.origin;
         var newheaders = Object.assign(headers, {
             'cookie': filterCookie(headers.cookie),
@@ -176,7 +201,8 @@ function forwardAjax(prefix, filterCookie) {
             }
             option.body = body;
         }
-        fetch(newurl, option, nodeOptions).then(function (result) {
+        fetch(url, option, nodeOptions).then(function (result) {
+            res.status(result.status);
             return result.text();
         }).then(function (json) {
             res.send(json);
@@ -186,22 +212,28 @@ function forwardAjax(prefix, filterCookie) {
     };
 }
 
-function forwardJs(prefix, filterCookie, filterJs) {
+function forwardStatic(prefix, filterCookie, filterJs) {
     return function (req, res, next) {
-        var query = req.query;
+        var query = req.query,
+            headers = req.headers;
 
         var method = 'get';
-        var newurl = query.url;
-        var host = newurl.match(/https?:\/\/(.+?)\//)[1];
+        var url = query.url;
+        if (!url) {
+            res.status(400).end('You must specify an url param for ajax static request!');
+            return;
+        }
+        var host = url.match(/https?:\/\/(.+?)\//)[1];
         var newheaders = {
             host: host
         };
-        fetch(newurl, {
+        fetch(url, {
             method: method,
             headers: newheaders,
             cookie: filterCookie(headers.cookie),
             credentials: 'include'
         }, nodeOptions).then(function (result) {
+            res.status(result.status);
             return result.text();
         }).then(function (js) {
             res.send(filterJs(js));
@@ -213,6 +245,5 @@ function forwardJs(prefix, filterCookie, filterJs) {
 
 function handleError(e, res) {
     console.log(e);
-    res.end(e.toString());
-    // next(e);
+    res.status(500).end('Error happend: ' + e.toString());
 }

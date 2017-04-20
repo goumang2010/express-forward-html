@@ -9,7 +9,11 @@ module.exports = {
         if (undefined === ckName || "" === ckName) {
             return "";
         }
-        return stringSplice(str, ckName, ";", "");
+        if (str == null) {
+            return '';
+        } else {
+            return stringSplice(str, ckName, ";", "");
+        }
     }
 };
 
