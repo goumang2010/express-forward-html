@@ -48,6 +48,10 @@ function forwardHtml(prefix, script, filterHtml) {
             res.status(400).end(`You must specify an url to forward html!`);
             return;
         }
+        // support local url
+        if(req.headers.host) {
+            url = urlLib.resolve(`${req.protocol}://${req.headers.host}`, url);
+        }
         let options = {
             credentials: 'include',
             headers: {
