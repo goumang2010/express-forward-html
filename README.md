@@ -1,3 +1,6 @@
+[![Build Status][travis-image]][travis-url]
+[![NPM version][npm-image]][npm-url]
+
 # express-forward-html
 Use express server to forward html, so that you can get the same origin page. Request it in an iframe, and then dom manipulation of the page is allowed in common broswer without proxy or plugin.
 
@@ -79,3 +82,7 @@ http://${localServerAddress}:${localServerPort}/${prefixInOptions}/html?url=${en
 - encodedTargetUrl: the target url you want visit.
 - ifMobileVersion: if set it to 1(true), then node will request the target using mobile UA.
 
+[travis-image]: https://img.shields.io/travis/goumang2010/express-forward-html.svg?style=flat-square
+[travis-url]: https://travis-ci.org/goumang2010/express-forward-html
+[npm-image]: https://img.shields.io/npm/v/express-forward-html.svg?style=flat
+[npm-url]: https://npmjs.org/package/express-forward-html

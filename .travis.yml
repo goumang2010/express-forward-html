@@ -1,0 +1,16 @@
+language: node_js
+node_js: stable
+
+# S: Build Lifecycle
+install:
+  - npm install
+
+script:
+  - npm run test
+
+branches:
+  only:
+    - master
+env:
+ global:
+   - GH_REF: github.com/goumang2010/express-forward-html.git
