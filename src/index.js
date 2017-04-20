@@ -45,7 +45,7 @@ function forwardHtml(prefix, script, filterHtml) {
     return function(req, res, next) {
         let url = req.query.url;
         if(!url) {
-            res.status(400).end(`You must specify an url!`);
+            res.status(400).end(`You must specify an url to forward html!`);
             return;
         }
         let options = {
@@ -86,6 +86,7 @@ function forwardHtml(prefix, script, filterHtml) {
         }
 
         function postProcess(result) {
+            res.status(result.status);
             let rawcookie = result.headers.get('set-cookie');
             if (rawcookie) {
                 res.append('Set-Cookie', rawcookie);
@@ -163,6 +164,7 @@ function forwardAjax(prefix, filterCookie) {
         }
         fetch(url, option, nodeOptions)
             .then(function(result) {
+                res.status(result.status);
                 return result.text();
             }).then(function(json) {
                 res.send(json);
@@ -192,6 +194,7 @@ function forwardStatic(prefix, filterCookie, filterJs) {
                 credentials: 'include'
             }, nodeOptions)
             .then(function(result) {
+                res.status(result.status);
                 return result.text();
             }).then(function(js) {
                 res.send(filterJs(js));
