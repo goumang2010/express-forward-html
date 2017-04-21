@@ -42,19 +42,19 @@ then, you can visit other url by : `http://127.0.0.1:8888/forward/html?url=https
 ```js
 {
 	prefix: '', // prefix of route path
-	filterHtml: function(html) {
+	filterHtml: function(html, req) {
         // do something for html content
         // example: remove all script tags
         html = html.replace(/<script[\S]+?<\/script>/g, '');
         return html;
     },
-    filterCookie: function(cookie) {
+    filterCookie: function(cookie, req) {
         // do something for cookie
         // example: stop website set key 'id' in cookie
         cookie =  cookie.replace(/id.*?=.+?;/gi, '');
         return cookie;
     },
-    filterStatic: function(content) {
+    filterStatic: function(content, req) {
         // do something for content dowloaded by xhr, like: js file
         // example: remove window.top.location in async js script
         content =  content.replace(/top\.location/g, '{}');
