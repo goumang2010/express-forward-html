@@ -25,8 +25,8 @@ module.exports = function forward() {
         filterHtml = _ref$filterHtml === undefined ? emptyFunc : _ref$filterHtml,
         _ref$filterCookie = _ref.filterCookie,
         filterCookie = _ref$filterCookie === undefined ? emptyFunc : _ref$filterCookie,
-        _ref$filterJs = _ref.filterJs,
-        filterJs = _ref$filterJs === undefined ? emptyFunc : _ref$filterJs,
+        _ref$filterStatic = _ref.filterStatic,
+        filterStatic = _ref$filterStatic === undefined ? emptyFunc : _ref$filterStatic,
         _ref$script = _ref.script,
         script = _ref$script === undefined ? function () {} : _ref$script;
 
@@ -45,7 +45,7 @@ module.exports = function forward() {
         if (router && router.all) {
             router.get(prefix + '/html', forwardHtml(prefix, script, filterHtml));
             router.all(prefix + '/ajax', forwardAjax(prefix, filterCookie));
-            router.get(prefix + '/static', forwardStatic(prefix, filterCookie, filterJs));
+            router.get(prefix + '/static', forwardStatic(prefix, filterCookie, filterStatic));
         } else {
             throw new TypeError('The param is not express instance or router!');
         }
@@ -127,7 +127,7 @@ function forwardHtml(prefix, script, filterHtml) {
             // 添加自定义脚本
             var proxytext = '<script>(' + xhrProxy + '(' + JSON.stringify(urlObj) + ', \'' + platform + '\', \'' + prefix + '\', ' + script + '))</script>';
             res.append('Content-Type', 'text/html; charset=utf-8');
-            res.end(filterHtml(html).replace('<head>', '<head>' + proxytext).replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function (m, p1, p2) {
+            res.end(filterHtml(html, req).replace('<head>', '<head>' + proxytext).replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function (m, p1, p2) {
                 return p1 + '="' + urlLib.resolve(url, p2) + '"';
             }));
         }
@@ -153,7 +153,7 @@ function forwardAjax(prefix, filterCookie) {
         // remove
         headers.origin && delete headers.origin;
         var newheaders = Object.assign(headers, {
-            'cookie': filterCookie(headers.cookie),
+            'cookie': filterCookie(headers.cookie, req),
             'host': host.replace(/https?:\/\//, ''),
             'referer': encodeURI(htmlurl)
         });
@@ -212,7 +212,7 @@ function forwardAjax(prefix, filterCookie) {
     };
 }
 
-function forwardStatic(prefix, filterCookie, filterJs) {
+function forwardStatic(prefix, filterCookie, filterStatic) {
     return function (req, res, next) {
         var query = req.query,
             headers = req.headers;
@@ -230,13 +230,13 @@ function forwardStatic(prefix, filterCookie, filterJs) {
         fetch(url, {
             method: method,
             headers: newheaders,
-            cookie: filterCookie(headers.cookie),
+            cookie: filterCookie(headers.cookie, req),
             credentials: 'include'
         }, nodeOptions).then(function (result) {
             res.status(result.status);
             return result.text();
         }).then(function (js) {
-            res.send(filterJs(js));
+            res.send(filterStatic(js, req));
         }).catch(function (err) {
             return handleError(err, res);
         });
