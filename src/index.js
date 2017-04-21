@@ -16,7 +16,7 @@ module.exports = function forward({
     prefix = '',
     filterHtml = emptyFunc,
     filterCookie = emptyFunc,
-    filterJs = emptyFunc,
+    filterStatic = emptyFunc,
     script = () => {}
 } = {}) {
     if (script) {
@@ -34,7 +34,7 @@ module.exports = function forward({
         if (router && router.all) {
             router.get(`${prefix}/html`, forwardHtml(prefix, script, filterHtml));
             router.all(`${prefix}/ajax`, forwardAjax(prefix, filterCookie));
-            router.get(`${prefix}/static`, forwardStatic(prefix, filterCookie, filterJs));
+            router.get(`${prefix}/static`, forwardStatic(prefix, filterCookie, filterStatic));
         } else {
             throw new TypeError('The param is not express instance or router!');
         }
@@ -176,7 +176,7 @@ function forwardAjax(prefix, filterCookie) {
     }
 }
 
-function forwardStatic(prefix, filterCookie, filterJs) {
+function forwardStatic(prefix, filterCookie, filterStatic) {
     return function(req, res, next) {
         let {
             query, headers
@@ -201,7 +201,7 @@ function forwardStatic(prefix, filterCookie, filterJs) {
                 res.status(result.status);
                 return result.text();
             }).then(function(js) {
-                res.send(filterJs(js));
+                res.send(filterStatic(js));
             }).catch(err => handleError(err, res));
     }
 }
