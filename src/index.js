@@ -110,7 +110,7 @@ function forwardHtml(prefix, script, filterHtml) {
             // 添加自定义脚本
             let proxytext = `<script>(${xhrProxy}(${JSON.stringify(urlObj)}, '${platform}', '${prefix}', ${script}))</script>`;
             res.append('Content-Type', 'text/html; charset=utf-8');
-            res.end(filterHtml(html)
+            res.end(filterHtml(html, req)
                 .replace('<head>', '<head>' + proxytext)
                 .replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function(m, p1, p2) {
                     return `${p1}="${urlLib.resolve(url, p2)}"`;
@@ -140,7 +140,7 @@ function forwardAjax(prefix, filterCookie) {
         // remove
         headers.origin && (delete headers.origin);
         let newheaders = Object.assign(headers, {
-            'cookie': filterCookie(headers.cookie),
+            'cookie': filterCookie(headers.cookie, req),
             'host': host.replace(/https?:\/\//, ''),
             'referer': encodeURI(htmlurl)
         });
@@ -194,14 +194,14 @@ function forwardStatic(prefix, filterCookie, filterStatic) {
         fetch(url, {
                 method,
                 headers: newheaders,
-                cookie: filterCookie(headers.cookie),
+                cookie: filterCookie(headers.cookie, req),
                 credentials: 'include'
             }, nodeOptions)
             .then(function(result) {
                 res.status(result.status);
                 return result.text();
             }).then(function(js) {
-                res.send(filterStatic(js));
+                res.send(filterStatic(js, req));
             }).catch(err => handleError(err, res));
     }
 }
