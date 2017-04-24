@@ -3,17 +3,19 @@ const fetch = require('node-fetch-custom');
 const fs = require('fs');
 const urlLib = require('url');
 const path = require('path');
-const xhrProxy = fs.readFileSync(path.resolve(__dirname, './script/xhr-proxy.js'), {
-    encoding: 'utf8'
-}).replace(`'use strict';`, '');
+const xhrProxy = fs.readFileSync(path.resolve(__dirname, './script/xhr-proxy.js'), { encoding: 'utf8' }).replace(`'use strict';`, '');
 const utils = require('./utils');
 const COOKIE_KEY = 'forward_html';
+const MOBILE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
+const PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36';
 const emptyFunc = x => x;
 const nodeOptions = {
     rejectUnauthorized: false
 }
 module.exports = function forward({
     prefix = '',
+    isMobileUA = () => false,
+    needRedirect = () => false,
     filterHtml = emptyFunc,
     filterCookie = emptyFunc,
     filterStatic = emptyFunc,
@@ -29,52 +31,59 @@ module.exports = function forward({
     } else {
         script = '';
     }
-
+    prefix !== '' && prefix.startsWith('/') || (prefix = '/' + prefix);
+    const opts = { prefix, isMobileUA, needRedirect, filterHtml, filterCookie, filterStatic, script };
     return function(router) {
         if (router && router.all) {
-            router.get(`${prefix}/html`, forwardHtml(prefix, script, filterHtml));
-            router.all(`${prefix}/ajax`, forwardAjax(prefix, filterCookie));
-            router.get(`${prefix}/static`, forwardStatic(prefix, filterCookie, filterStatic));
+            router.get(`${prefix}/html`, forwardHtml(opts));
+            router.all(`${prefix}/ajax`, forwardAjax(opts));
+            router.get(`${prefix}/static`, forwardStatic(opts));
         } else {
             throw new TypeError('The param is not express instance or router!');
         }
     }
 }
 
-function forwardHtml(prefix, script, filterHtml) {
+function forwardHtml({ prefix, script, isMobileUA, needRedirect, filterHtml }) {
     return function(req, res, next) {
         let url = req.query.url;
-        if(!url) {
+        
+        if (!url) {
             res.status(400).end(`You must specify an url to forward html!`);
             return;
         }
         // support local url
-        if(req.headers.host) {
-            url = urlLib.resolve(`${req.protocol}://${req.headers.host}`, url);
+        let serverHost;
+        if (req.headers.host) {
+            serverHost = `${req.protocol}://${req.headers.host}`;
+            url = urlLib.resolve(`${serverHost}`, url);
         }
         let options = {
             credentials: 'include',
             headers: {
                 'Connection': 'keep-alive',
-                'Pragma': 'no-cache',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36'
+                'Pragma': 'no-cache'
             }
         };
-        let platform = req.query.m;
-        let mobile = (platform === 'H5' ? true : false);
-        if (mobile || (/\/\/m\./.test(url) && !mobile)) {
-            if (mobile) {
-                options.headers['User-Agent'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
-            }
+        
+        let mobile = isMobileUA(url, req);
+        let UA;
+        if (typeof mobile === 'string') {
+            UA = mobile;
+            mobile = /Mobile|iphone|Android/i.test(mobile);
+        } else if (mobile) {
+            UA = MOBILE_UA;
+        } else {
+            UA = PC_UA;
+        }
+        options.headers['User-Agent'] = UA;
+        if (needRedirect(url, req)) {
             options.redirect = 'manual';
             // 先请求一次，探查真实地址
             fetchProcess().then(function(result) {
                 let relocation = result.headers.get('location');
                 if (relocation && (relocation !== url)) {
                     url = relocation;
-                    if (!mobile) {
-                        platform = 'PC';
-                    }
                     options.redirect = 'follow';
                     fetchProcess().then((result) => postProcess(result))
                 } else {
@@ -103,12 +112,14 @@ function forwardHtml(prefix, script, filterHtml) {
         function processHtml(html) {
             // const id = Date.now() + Math.floor(Math.random() * 10000);
             let urlObj = urlLib.parse(url);
+            let serverUrlObj = urlLib.parse(serverHost + req.originalUrl);
             let origin = url.replace(/\/[^\/]*?$/, '');
             let time = new Date();
             time.setTime(Date.now() + 86400000);
             res.append('Set-Cookie', `${COOKIE_KEY}=${url};expires=${time.toUTCString()}`);
             // 添加自定义脚本
-            let proxytext = `<script>(${xhrProxy}(${JSON.stringify(urlObj)}, '${platform}', '${prefix}', ${script}))</script>`;
+            Object.assign(urlObj, { mobile, UA, prefix, serverUrlObj});
+            let proxytext = `<script>(${xhrProxy}(${JSON.stringify(urlObj)}, ${script}))</script>`;
             res.append('Content-Type', 'text/html; charset=utf-8');
             res.end(filterHtml(html, req)
                 .replace('<head>', '<head>' + proxytext)
@@ -120,7 +131,7 @@ function forwardHtml(prefix, script, filterHtml) {
     }
 }
 
-function forwardAjax(prefix, filterCookie) {
+function forwardAjax({ prefix, filterCookie }) {
     return function(req, res, next) {
         let htmlurl = utils.getCookie(req.headers.cookie, COOKIE_KEY);
         let {
@@ -132,7 +143,7 @@ function forwardAjax(prefix, filterCookie) {
         } = req;
         let host = utils.getHost(htmlurl) || url;
         const urlObj = urlLib.parse(url);
-        if(urlObj.path.match(/^\/ajax\/?$/i)) {
+        if (urlObj.path.match(/^\/ajax\/?$/i)) {
             res.status(400).end(`Can not forward null ajax request, HTML url: ${htmlurl||'null'}, XHR url: ${url}`);
             return;
         }
@@ -140,7 +151,7 @@ function forwardAjax(prefix, filterCookie) {
         // remove
         headers.origin && (delete headers.origin);
         let newheaders = Object.assign(headers, {
-            'cookie': filterCookie(headers.cookie, req),
+            'cookie': filterCookie(headers.cookie || '', req),
             'host': host.replace(/https?:\/\//, ''),
             'referer': encodeURI(htmlurl)
         });
@@ -176,10 +187,11 @@ function forwardAjax(prefix, filterCookie) {
     }
 }
 
-function forwardStatic(prefix, filterCookie, filterStatic) {
+function forwardStatic({ prefix, filterCookie, filterStatic }) {
     return function(req, res, next) {
         let {
-            query, headers
+            query,
+            headers
         } = req;
         let method = 'get';
         let url = query.url;
@@ -194,7 +206,7 @@ function forwardStatic(prefix, filterCookie, filterStatic) {
         fetch(url, {
                 method,
                 headers: newheaders,
-                cookie: filterCookie(headers.cookie, req),
+                cookie: filterCookie(headers.cookie || '', req),
                 credentials: 'include'
             }, nodeOptions)
             .then(function(result) {
