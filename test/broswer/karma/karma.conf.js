@@ -15,11 +15,6 @@ module.exports = function(config) {
         ],
         // list of files to exclude
         exclude: [],
-        client: {
-            mocha: {
-                opts: 'mocha.opts'
-            }
-        },
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
@@ -62,10 +57,11 @@ module.exports = function(config) {
         autoWatch: true,
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
+        // browsers: ['PhantomJS'],
         browsers: ['Chrome'],
         // Continuous Integration mode
         // if true, Karma captures browsers, runs the tests and exits
-        singleRun: false,
+        singleRun: true,
         // Concurrency level
         // how many browser should be started simultaneous
         concurrency: Infinity
