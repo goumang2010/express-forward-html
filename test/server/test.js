@@ -1,42 +1,13 @@
 import chai from 'chai';
-import forward from '../src/index.js';
-const expect = chai.expect;
-import TestServer from './server';
+import forward from '../../src/index.js';
+import TestServer from './index';
 import request from 'supertest';
+import urls from '../data/urls';
+import productionOption from '../data/prod.config';
+const expect = chai.expect;
 const local = new TestServer();
-// const base = `http://${local.hostname}:${local.port}/`;
-const urls = [
-    'https://www.gome.com.cn/',
-    'https://www.gomeplus.com/'
-]
 commonTest({ description: 'null option should start normally', urls });
-const productionOption = {
-    filterHtml(html) {
-        return html.replace(/<script[\S]+?uba-sdk[\S]+?<\/script>/, '').replace(/top\.location/g, '{}');
-    },
-    filterCookie(cookie) {
-        return cookie.replace(/DataPlatform.*?=.+?;/gi, '')
-    },
-    filterStatic(content) {
-        return content && content.replace(/\.assign\(([^,]+?)\)/g, '.$assign($1)').replace(/top\.location/g, '{}');
-    },
-    prefix: '/databp',
-    script: function _external(pageUrl, platform, origin, prefix) {
-        window.$pageUrl = pageUrl;
-        window.$platform = platform;
-        window.location.$assign = function(url) {
-            let newurl;
-            if (/https?:\/\//.test(url)) {
-                // do noting
-                newurl = url;
-            } else {
-                newurl = '/databp/html?m=' + platform + '&url=' + encodeURIComponent(pageUrl.replace(/\/$/, '') + '/' + url.replace(/^\//, ''));
-            }
-            window.location.assign(newurl);
-        }
-    }
-}
-commonTest({ description: 'production option should work', urls, option: productionOption});
+commonTest({ description: 'production option should work', urls, option: productionOption });
 
 function commonTest({ description, option, urls }) {
     describe(description, function() {
