@@ -40,7 +40,7 @@ function commonTest({ description, option, urls }) {
                 .expect(400, done);
         });
         it('request local server html', function(done) {
-            let url = `/html?url=/statics/index.html`;
+            let url = `/html?url=/test/html/index.html`;
             request(app)
                 .get(url)
                 .expect(200, done);
