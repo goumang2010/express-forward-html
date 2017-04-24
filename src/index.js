@@ -31,7 +31,7 @@ module.exports = function forward({
     } else {
         script = '';
     }
-    prefix !== '' && prefix.startsWith('/') || (prefix = '/' + prefix);
+    prefix !== '' && (prefix.startsWith('/') || (prefix = '/' + prefix));
     const opts = { prefix, isMobileUA, needRedirect, filterHtml, filterCookie, filterStatic, script };
     return function(router) {
         if (router && router.all) {
@@ -133,27 +133,26 @@ function forwardHtml({ prefix, script, isMobileUA, needRedirect, filterHtml }) {
 
 function forwardAjax({ prefix, filterCookie }) {
     return function(req, res, next) {
-        let htmlurl = utils.getCookie(req.headers.cookie, COOKIE_KEY);
         let {
             method,
-            url,
             query,
             body,
             headers
         } = req;
-        let host = utils.getHost(htmlurl) || url;
-        const urlObj = urlLib.parse(url);
-        if (urlObj.path.match(/^\/ajax\/?$/i)) {
-            res.status(400).end(`Can not forward null ajax request, HTML url: ${htmlurl||'null'}, XHR url: ${url}`);
+        let {url, referer} = query;
+        if (url && referer) {
+            url = urlLib.resolve(referer, url);
+        } else {
+            res.status(400).end(`Can not forward null ajax request, HTML url: ${referer||'null'}, XHR url: ${url}`);
             return;
         }
-        url = url.replace(`${prefix}/ajax`, host);
+        let referObj =  urlLib.parse(referer);
         // remove
         headers.origin && (delete headers.origin);
         let newheaders = Object.assign(headers, {
             'cookie': filterCookie(headers.cookie || '', req),
-            'host': host.replace(/https?:\/\//, ''),
-            'referer': encodeURI(htmlurl)
+            'host': referObj.host,
+            'referer': encodeURI(referObj.href)
         });
         const option = {
             method,
