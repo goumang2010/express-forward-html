@@ -21,7 +21,7 @@
                 "--colors",
                 "--compilers",
                 "js:babel-register",
-                "${workspaceRoot}/test"
+                "${workspaceRoot}/test/server"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         },
@@ -29,17 +29,18 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceRoot}/test/run.js"
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/babel-node.cmd",
+            "program": "${workspaceRoot}/test/server/run.js"
         },
         {
             "type": "node",
             "request": "launch",
             "name": "nodemon mockServer",
-            "runtimeExecutable": "${workspaceRoot}/test/node_modules/.bin/nodemon",
+            "runtimeExecutable": "nodemon",
             "runtimeArgs": [
                 "--debug=5859"
             ],
-            "program": "${workspaceRoot}/test/run.js",
+            "program": "${workspaceRoot}/test/server/run.js",
             "restart": true,
             "port": 5859,
             "console": "integratedTerminal",
