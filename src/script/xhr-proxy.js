@@ -1,29 +1,27 @@
-function inject(urlObj, platform, prefix, extraScript) {
-    let pageUrl = urlObj.href;
-    let protocol = urlObj.protocol;
-    let origin = protocol + urlObj.host;
+function inject(urlObj, extraScript) {
+    let {protocol, host, prefix, UA, serverUrlObj} = urlObj;
+    let origin = `${protocol}//${host}`;
+    let serverBase = serverUrlObj.protocol + '//' + serverUrlObj.host + serverUrlObj.pathname.slice(0, -4);
     if (window.XMLHttpRequest) {
-        if (platform === 'H5') {
-            Object.defineProperty(window.navigator, 'userAgent', { writable: true, configurable: true, enumerable: true });
-            window.navigator.userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
-        }
+        Object.defineProperty(window.navigator, 'userAgent', { writable: true, configurable: true, enumerable: true });
+        window.navigator.userAgent = UA;
         var open = window.XMLHttpRequest.prototype.open;
         window.XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
             var args = [].slice.call(arguments);
             //  remove same origin
             url = url.replace(origin, '');
             let res;
-            if (res = /^(https?:)?\/\//.test(url)) {
+            if (res = /^(https?:)?\/\//.exec(url)) {
                 if(!res[1]) {
                     url = protocol + url;
                 }
-                args[1] = `${prefix}/static?url=${encodeURIComponent(url)}`;
+                args[1] = `${serverBase}static?url=${encodeURIComponent(url)}`;
             } else {
-                args[1] = `${prefix}/ajax` + (url.indexOf('/') === 0 ? url : '/' + url);
+                args[1] = `${serverBase}ajax` + (url.indexOf('/') === 0 ? url : '/' + url);
             }
             // call original open method
             return open.apply(this, args);
         }
     }
-    extraScript(pageUrl, platform, origin, prefix);
+    extraScript(urlObj);
 }
