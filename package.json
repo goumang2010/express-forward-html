@@ -41,7 +41,8 @@
     "lint": "./node_modules/.bin/eslint index.js --fix",
     "build": "./node_modules/.bin/babel src -d dist",
     "test:s": "cross-env BABEL_ENV=test mocha --compilers js:babel-register test/server/test.js",
-    "test:b": "karma start ./test/broswer/karma/index.js"
+    "test:b": "karma start ./test/broswer/karma/index.js",
+    "test": "npm run test:s &&npm run test:b"
   },
   "dependencies": {
     "node-fetch-custom": "^1.1.0"
