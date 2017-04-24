@@ -11,13 +11,13 @@ function inject(urlObj, extraScript) {
             //  remove same origin
             url = url.replace(origin, '');
             let res;
-            if (res = /^(https?:)?\/\//.exec(url)) {
+            if ((res = /^(https?:)?\/\//.exec(url)) && method.toLowerCase() === 'get') {
                 if(!res[1]) {
                     url = protocol + url;
                 }
                 args[1] = `${serverBase}static?url=${encodeURIComponent(url)}`;
             } else {
-                args[1] = `${serverBase}ajax` + (url.indexOf('/') === 0 ? url : '/' + url);
+                args[1] = `${serverBase}ajax?url=${encodeURIComponent(url)}&referer=${encodeURIComponent(window.location.href)}`;
             }
             // call original open method
             return open.apply(this, args);
