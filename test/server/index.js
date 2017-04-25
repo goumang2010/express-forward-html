@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { port } = require('./config');
 export default class TestServer {
-    constructor() {
+    constructor($port = port) {
         this.app = express();
         this.app.use(function(req, res, next) {
             res.header('Access-Control-Allow-Credentials', true);
@@ -18,7 +18,7 @@ export default class TestServer {
             res.json(require(`../data/ajax/${filename}`));
             next();
         });
-        this.port = port;
+        this.port = $port;
         this.hostname = 'localhost';
         this.app.on('error', function(err) {
             console.log(err.stack);
@@ -28,7 +28,10 @@ export default class TestServer {
         });
     }
     start(cb) {
-        this.app.listen(this.port, this.hostname, cb);
+        return this.app.listen(this.port, this.hostname, () => {
+            console.log(`Server: ${this.hostname} listened on ${this.port}.`);
+            cb && cb.call(this);
+        });
     }
     stop(cb) {
         this.app.close(cb);
