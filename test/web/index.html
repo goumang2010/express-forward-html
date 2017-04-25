@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="Content-Type" />
+    <meta http-equiv="expires" content="0">
+    <title>Web Test Platform</title>
+    <link rel="stylesheet" href="statics/css/bootstrap.min.css">
+    <link rel="stylesheet" href="src/css/index.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-default navbar-static-top in" role="navigation" style="margin-bottom: 0" aria-expanded="true">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand active" href="/">Web Test Platform</a>
+        </div>
+    </nav>
+    <div class="container">
+        <section class="url-access">
+            <div class="panel panel-default left-column">
+                <div class="panel-heading">
+                    <strong>Url List</strong>
+                </div>
+                <div class="panel-body">
+                    <div class="sidebar-box">
+                        <ul id="urllist">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="right-column">
+                <div class="form-group url-input">
+                    <label class="control-label">Custom Url</label>
+                    <input type="text" class="form-control" placeholder="Please enter an url" id="customurl">
+                </div>
+                <button id="gotoBtn" class="btn btn-primary gotoBtn" type="button" data-trigger="focus">Go</button>
+
+                <button id="addBtn" class="btn addBtn" type="button" data-trigger="focus">Add</button>
+                <div class="logbox">
+                    <ul>
+                    </ul>
+                    <a class="clear">clear</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+<script src="/statics/js/polyfill.min.js"></script>
+<script src="/statics/js/socket.io.min.js"></script>
+<script src="/statics/js/Rx.min.js"></script>
+<script src="/statics/js/index.js"></script>
+
+</html>
