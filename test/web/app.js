@@ -18,7 +18,8 @@ router.get('/', function(req, res, next) {
 forward()(router);
 app.use('/', router);
 const server = local.start();
-const urlpath = path.join(__dirname, '../data/', 'urls.json');
+var urlpath = path.join(__dirname, '../data/', 'urls.json');
+fs.existsSync(urlpath) || (urlpath = path.join(__dirname, '../data/', 'urls.default.json'));
 //WebSocket
 let io = socketio.listen(server).on('connection', function(client) {
     let id = client.id;
