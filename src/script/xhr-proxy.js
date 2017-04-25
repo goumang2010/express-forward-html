@@ -17,7 +17,7 @@ function inject(urlObj, extraScript) {
                 }
                 args[1] = `${serverBase}static?url=${encodeURIComponent(url)}`;
             } else {
-                args[1] = `${serverBase}ajax?url=${encodeURIComponent(url)}&referer=${encodeURIComponent(window.location.href)}`;
+                args[1] = `${serverBase}ajax?url=${encodeURIComponent(url)}&referer=${encodeURIComponent(urlObj.href)}`;
             }
             // call original open method
             return open.apply(this, args);
