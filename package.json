@@ -1,7 +1,7 @@
 {
   "name": "express-forward-html",
   "description": "forward html",
-  "version": "1.4.8",
+  "version": "1.5.0",
   "license": "MIT",
   "author": {
     "name": "lzn",
@@ -43,7 +43,8 @@
     "build:web": "./node_modules/.bin/rollup -m -c ./test/web/build/config.js",
     "test:s": "cross-env BABEL_ENV=test mocha --compilers js:babel-register test/server/test.js",
     "test:b": "karma start ./test/broswer/karma/index.js",
-    "test": "npm run test:s &&npm run test:b"
+    "test": "npm run test:s &&npm run test:b",
+    "test:web": "node ./test/web/app.js"
   },
   "dependencies": {
     "node-fetch-custom": "^1.1.0"
