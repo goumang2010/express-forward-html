@@ -159,7 +159,7 @@ function forwardAjax({ prefix, filterCookie }) {
             headers: newheaders,
             credentials: 'include'
         };
-        let bodykeys = Object.keys(body);
+        let bodykeys = Object.keys(body || {});
         if (body && bodykeys.length) {
             for (let key of bodykeys) {
                 let oldval = body[key]
