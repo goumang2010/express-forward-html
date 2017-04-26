@@ -17,7 +17,15 @@ router.get('/', function(req, res, next) {
 });
 forward()(router);
 app.use('/', router);
-const server = local.start();
+const server = local.start(() => {
+    var launchers = require('karma-chrome-launcher');
+    var ChromeBrowser = launchers['launcher:Chrome'][1];
+    var platform = require('os').platform();
+    var launcher = new ChromeBrowser(x=>x, {});
+    var cmd = launcher.DEFAULT_CMD[platform];
+    var execSync = require('child_process').execSync;
+    execSync(`"${cmd}" http://${local.host}`);
+});
 var urlpath = path.join(__dirname, '../data/', 'urls.json');
 fs.existsSync(urlpath) || (urlpath = path.join(__dirname, '../data/', 'urls.default.json'));
 //WebSocket

@@ -20,6 +20,7 @@ export default class TestServer {
         });
         this.port = $port;
         this.hostname = 'localhost';
+        this.host = `${this.hostname}:${this.port}`
         this.app.on('error', function(err) {
             console.log(err.stack);
         });
