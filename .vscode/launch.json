@@ -28,9 +28,10 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/babel-node.cmd",
-            "program": "${workspaceRoot}/test/server/run.js"
+            "name": "Launch Web",
+            "protocol": "inspector",
+            // "runtimeExecutable": "node",
+            "program": "${workspaceRoot}/test/web/app.js"
         },
         {
             "type": "node",
