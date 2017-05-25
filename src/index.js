@@ -5,7 +5,7 @@ const urlLib = require('url');
 const path = require('path');
 const xhrProxy = fs.readFileSync(path.resolve(__dirname, './script/xhr-proxy.js'), { encoding: 'utf8' }).replace(`'use strict';`, '');
 const utils = require('./utils');
-const COOKIE_KEY = 'forward_html';
+// const COOKIE_KEY = 'forward_html';
 const MOBILE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
 const PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36';
 const emptyFunc = x => x;
@@ -116,12 +116,12 @@ function forwardHtml({ prefix, script, isMobileUA, needRedirect, filterHtml }) {
             let origin = url.replace(/\/[^\/]*?$/, '');
             let time = new Date();
             time.setTime(Date.now() + 86400000);
-            res.append('Set-Cookie', `${COOKIE_KEY}=${url};expires=${time.toUTCString()}`);
+            // res.append('Set-Cookie', `${COOKIE_KEY}=${encodeURIComponent(url)};expires=${time.toUTCString()}`);
             // 添加自定义脚本
             Object.assign(urlObj, { mobile, UA, prefix, serverUrlObj});
             let proxytext = `<script>(${xhrProxy}(${JSON.stringify(urlObj)}, ${script}))</script>`;
             res.append('Content-Type', 'text/html; charset=utf-8');
-            res.end(filterHtml(html, req)
+            res.end(filterHtml(html, urlObj, req)
                 .replace('<head>', '<head>' + proxytext)
                 .replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function(m, p1, p2) {
                     return `${p1}="${urlLib.resolve(url, p2)}"`;
