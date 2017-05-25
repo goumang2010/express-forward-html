@@ -8,7 +8,7 @@ var urlLib = require('url');
 var path = require('path');
 var xhrProxy = fs.readFileSync(path.resolve(__dirname, './script/xhr-proxy.js'), { encoding: 'utf8' }).replace('\'use strict\';', '');
 var utils = require('./utils');
-var COOKIE_KEY = 'forward_html';
+// const COOKIE_KEY = 'forward_html';
 var MOBILE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
 var PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36';
 var emptyFunc = function emptyFunc(x) {
@@ -145,12 +145,12 @@ function forwardHtml(_ref2) {
             var origin = url.replace(/\/[^\/]*?$/, '');
             var time = new Date();
             time.setTime(Date.now() + 86400000);
-            res.append('Set-Cookie', COOKIE_KEY + '=' + url + ';expires=' + time.toUTCString());
+            // res.append('Set-Cookie', `${COOKIE_KEY}=${encodeURIComponent(url)};expires=${time.toUTCString()}`);
             // 添加自定义脚本
             Object.assign(urlObj, { mobile: mobile, UA: UA, prefix: prefix, serverUrlObj: serverUrlObj });
             var proxytext = '<script>(' + xhrProxy + '(' + JSON.stringify(urlObj) + ', ' + script + '))</script>';
             res.append('Content-Type', 'text/html; charset=utf-8');
-            res.end(filterHtml(html, req).replace('<head>', '<head>' + proxytext).replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function (m, p1, p2) {
+            res.end(filterHtml(html, urlObj, req).replace('<head>', '<head>' + proxytext).replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function (m, p1, p2) {
                 return p1 + '="' + urlLib.resolve(url, p2) + '"';
             }));
         }
