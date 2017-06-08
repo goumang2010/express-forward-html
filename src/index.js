@@ -160,7 +160,7 @@ const forwardAjax = ({ prefix, filterCookie }) => async(req, res, next) => {
             }
             option.body = body;
         }
-    } else {
+    } else if(!/get|head/i.test(method)){
         // use req stream
         option.body = req;
     }
