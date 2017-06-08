@@ -1,7 +1,6 @@
 // Karma configuration
 // Generated on Fri Apr 21 2017 14:44:07 GMT+0800 (中国标准时间)
 module.exports = function(config) {
-
     config.set({
         // base path that will be used to resolve all patterns (eg. files, exclude)
         basePath: '..',
@@ -28,14 +27,17 @@ module.exports = function(config) {
                 require('rollup-plugin-commonjs')(),
                 require('rollup-plugin-babel')({
                     babelrc: false,
-                    "presets": [
-                        ["latest", {
-                            "es2015": {
-                                "modules": false
+                    runtimeHelpers: true,
+                    presets: [
+                        ["env", {
+                            "modules": false,
+                            "loose": true,
+                            "targets": {
+                                "browsers": ["last 2 versions", "safari >= 7"]
                             }
                         }]
                     ]
-                }),
+                })
             ],
             format: 'iife', // Helps prevent naming collisions.
             moduleName: 'express-forward', // Required for 'iife' format.
