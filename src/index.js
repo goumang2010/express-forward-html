@@ -17,6 +17,8 @@ const falseFunc = () => false;
 const nodeOptions = {
     rejectUnauthorized: false
 }
+
+
 // copy from node-fetch
 class ForwardError extends Error {
     constructor(message, statusCode, systemError) {
@@ -38,7 +40,19 @@ const handleError = (e, req, res, next) => {
     console.error(e);
     res.status(e.statusCode || 500).end(`Error happend: ${e.toString()}`);
 }
-// const normalForward = (type = 'text', setter, filter) => R.composeP(filter, getResponseResult(type), setter, fetchRequest);
+
+
+const _filterResCookie = str => str.replace(/(;\s?domain.+?)(;\s.*)?$/g, '$2');
+const trimResponseCookie = (headers, cookie = headers.get('set-cookie')) =>
+    Array.isArray(cookie) ?
+    cookie.map(x => _filterResCookie(x)) :
+    (cookie.replace ? _filterResCookie(cookie) : cookie);
+
+const appendResponseCookie = (headers, res) => {
+    let cookie = trimResponseCookie(headers);
+    cookie && res.append('Set-Cookie', cookie);
+}
+
 const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) => (req, res, next) => {
     let url = req.query.url;
     if (!url) {
@@ -91,10 +105,7 @@ const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) =
 
     function postProcess(result) {
         res.status(result.status);
-        let rawcookie = result.headers.get('set-cookie');
-        if (rawcookie) {
-            res.append('Set-Cookie', rawcookie);
-        }
+        appendResponseCookie(result.headers, res)
         return Promise.resolve(result.text()).then(function(html) {
             return processHtml(html);
         }).catch(err => handleError(err, res));
@@ -120,6 +131,7 @@ const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) =
         );
     }
 }
+
 const forwardAjax = ({ prefix, filterCookie }) => async(req, res, next) => {
     let { method, query, body, headers } = req;
     let { url, referer } = query;
@@ -160,11 +172,13 @@ const forwardAjax = ({ prefix, filterCookie }) => async(req, res, next) => {
             }
             option.body = body;
         }
-    } else if(!/get|head/i.test(method)){
+    } else if (!/get|head/i.test(method)) {
         // use req stream
         option.body = req;
     }
     let resObj = await fetch(url, option, nodeOptions, true);
+    let resheaders = resObj.headers;
+    appendResponseCookie(resheaders, res);
     resObj.body.pipe(res);
 }
 const forwardStatic = ({ prefix, filterCookie, filterStatic }) => async(req, res, next) => {
