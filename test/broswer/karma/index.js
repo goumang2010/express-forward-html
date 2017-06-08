@@ -1,4 +1,5 @@
 require('babel-register');
+require('babel-polyfill');
 module.exports = function(config) {
     const TestServer = require('../../server').default;
     const testServer = new TestServer();
