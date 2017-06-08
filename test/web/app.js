@@ -1,6 +1,7 @@
 require('babel-register');
 const TestServer = require('../server').default;
 const express = require('express');
+const bodyParser = require('body-parser');
 const socketio = require('socket.io');
 const path = require('path');
 const fs = require('fs');
@@ -15,13 +16,19 @@ let indexPath = path.join(__dirname, './index.html');
 router.get('/', function(req, res, next) {
     res.sendFile(indexPath);
 });
+// app.use(bodyParser.json({ limit: '50mb' }));
+// //parse application/x-www-form-urlencoded
+// app.use(bodyParser.urlencoded({
+//     limit: '50mb',
+//     extended: false
+// }));
 forward()(router);
 app.use('/', router);
 const server = local.start(() => {
     var launchers = require('karma-chrome-launcher');
     var ChromeBrowser = launchers['launcher:Chrome'][1];
     var platform = require('os').platform();
-    var launcher = new ChromeBrowser(x=>x, {});
+    var launcher = new ChromeBrowser(x => x, {});
     var cmd = launcher.DEFAULT_CMD[platform];
     var execSync = require('child_process').execSync;
     execSync(`"${cmd}" http://${local.host}`);
