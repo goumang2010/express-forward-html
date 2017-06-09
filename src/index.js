@@ -17,8 +17,6 @@ const falseFunc = () => false;
 const nodeOptions = {
     rejectUnauthorized: false
 }
-
-
 // copy from node-fetch
 class ForwardError extends Error {
     constructor(message, statusCode, systemError) {
@@ -40,19 +38,13 @@ const handleError = (e, req, res, next) => {
     console.error(e);
     res.status(e.statusCode || 500).end(`Error happend: ${e.toString()}`);
 }
-
-
-const _filterResCookie = str => str.replace(/(;\s?domain.+?)(;\s.*)?$/g, '$2');
+const _filterResCookie = str => str.split(/;\s?/).filter(x => !/^\s*domain/i.test(x)).join(';');
 const trimResponseCookie = (headers, cookie = headers.get('set-cookie')) =>
-    Array.isArray(cookie) ?
-    cookie.map(x => _filterResCookie(x)) :
-    (cookie.replace ? _filterResCookie(cookie) : cookie);
-
+    (cookie && cookie.split(/,\s?/).map(x => _filterResCookie(x)));
 const appendResponseCookie = (headers, res) => {
     let cookie = trimResponseCookie(headers);
     cookie && res.append('Set-Cookie', cookie);
 }
-
 const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) => (req, res, next) => {
     let url = req.query.url;
     if (!url) {
@@ -131,7 +123,6 @@ const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) =
         );
     }
 }
-
 const forwardAjax = ({ prefix, filterCookie }) => async(req, res, next) => {
     let { method, query, body, headers } = req;
     let { url, referer } = query;
