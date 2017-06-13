@@ -15,20 +15,21 @@ use it in express app. example:
 
 ```js
 var express = require('express');
-var bodyParser = require('body-parser');
 var app = express();
 var forward = require('express-forward-html');
 
-// use body-parser before it, or you cannot forward post request.
-forward({
-    prefix: '/forward'
+// using body-parser or not is either ok.
+// var bodyParser = require('body-parser');
 
-// express router instance is ok, too.
+forward({
+    // options here
+    prefix: '/forward'
+// express router instance is available, too.
 })(app);
 
 var port = 8888;
 app.listen(port, () =>{
-	console.log('the mock server is listen on: ' + port);
+    console.log('the mock server is listen on: ' + port);
 });
 
 ```
@@ -38,11 +39,27 @@ then, you can visit other url by : `http://127.0.0.1:8888/forward/html?url=https
 ## Configuration
 
 ### options
+```ts
+interface Options {
+    prefix: string;
+    filterHtml: (html: string, req: Request) => string;
+    filterCookie: (cookie: string, req: Request) => string;
+    filterStatic: (content: string, req: Request) => string;
+    script: string | ((urlObj: CustomURL) => void);
+    isMobileUA: (url: string) => boolean | string;
+    needRedirect: (url: string, req: Request) => boolean;
+}
+interface CustomURL extends URL {
+    mobile: boolean;
+    serverUrlObj: URL;
+}
+```
 
+An example:
 ```js
 {
-	prefix: '', // prefix of route path
-	filterHtml: function(html, req) {
+    prefix: '', // prefix of route path
+    filterHtml: function(html, req) {
         // do something for html content
         // example: remove all script tags
         html = html.replace(/<script[\S]+?<\/script>/g, '');
@@ -61,28 +78,40 @@ then, you can visit other url by : `http://127.0.0.1:8888/forward/html?url=https
         return content;
     },
     // custom script ,it will be injected on the top of head tag
-    script: function(url, platform, origin, prefix) {
-        window.$pageUrl = url;
-    }
     // you can use string or read from other files, eg:
     // script: 'function(url) {window.$pageUrl=url;}'
     // script: fs.readFileSync(path.join(__dirname, './script.js'), 'utf8')
+    script: function(urlObj) {
+        window.$pageUrl = urlObj.href;
+    }
+    // Or isMobileUA: (url) => /[/.](m|wap)\./.test(url) ? H5UA : PCUA;
+    // the rule to auto decide if requesting an url with mobile UA. 
+    // If it is not set, the default UA will be PC
+    isMobileUA: (url) => /[/.](m|wap)\./.test(url),
+    // a function decide if redirect is necessary for the url
+    needRedirect: function(url, req) {
+        let mobile = /[/.](m|wap)\./.test(url);
+        let isSpecifedH5 = req.query.m === 'H5';
+        return (!isSpecifedH5 && mobile) || (!mobile && isSpecifedH5);
+    }
 }
 ```
 
 ### broswer request formation
 
 ```
-http://${localServerAddress}:${localServerPort}/${prefixInOptions}/html?url=${encodedTargetUrl}&m=${ifMobileVersion}
+http://${localServerAddress}:${localServerPort}/${prefixInOptions}/html?url=${encodedTargetUrl}
 ```
 
 - localServerAddress: express server address, eg: `localhost`
 - localServerPort: express server port listened, eg: `8080`
 - prefixInOptions: prefix can be set in options, if not, there will add router(/html, /ajax, /static) in root path
 - encodedTargetUrl: the target url you want visit.
-- ifMobileVersion: if set it to 1(true), then node will request the target using mobile UA.
 
 [travis-image]: https://img.shields.io/travis/goumang2010/express-forward-html.svg?style=flat-square
 [travis-url]: https://travis-ci.org/goumang2010/express-forward-html
 [npm-image]: https://img.shields.io/npm/v/express-forward-html.svg?style=flat
 [npm-url]: https://npmjs.org/package/express-forward-html
+
+## TODO
+- [ ] forward request in root router according to referer.
