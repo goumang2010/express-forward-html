@@ -170,6 +170,14 @@ const forwardAjax = ({ prefix, filterCookie }) => async(req, res, next) => {
     let resObj = await fetch(url, option, nodeOptions, true);
     let resheaders = resObj.headers;
     appendResponseCookie(resheaders, res);
+    resheaders.delete('Set-Cookie');
+    let rawheaders = resheaders.raw();
+    Object.keys(rawheaders).forEach((x) => {
+        if (rawheaders[x]) {
+            rawheaders[x] = rawheaders[x].toString();
+        }
+    })
+    res.set(rawheaders);
     resObj.body.pipe(res);
 }
 const forwardStatic = ({ prefix, filterCookie, filterStatic }) => async(req, res, next) => {
