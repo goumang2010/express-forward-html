@@ -7,7 +7,7 @@ function inject(urlObj, extraScript) {
         UA = urlObj.UA,
         serverUrlObj = urlObj.serverUrlObj;
 
-    var origin = protocol + '//' + host;
+    var origin = `${protocol}//${host}`;
     var serverBase = serverUrlObj.protocol + '//' + serverUrlObj.host + serverUrlObj.pathname.slice(0, -4);
     if (window.XMLHttpRequest) {
         Object.defineProperty(window.navigator, 'userAgent', { writable: true, configurable: true, enumerable: true });
@@ -23,9 +23,9 @@ function inject(urlObj, extraScript) {
                     if (!res[1]) {
                         url = protocol + url;
                     }
-                    args[1] = serverBase + 'static?url=' + encodeURIComponent(url);
+                    args[1] = `${serverBase}static?url=${encodeURIComponent(url)}`;
                 } else {
-                    args[1] = serverBase + 'ajax?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent(urlObj.href);
+                    args[1] = `${serverBase}ajax?url=${encodeURIComponent(url)}&referer=${encodeURIComponent(urlObj.href)}`;
                 }
             }
             // call original open method

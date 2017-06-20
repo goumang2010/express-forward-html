@@ -1,10 +1,9 @@
 "use strict";
 
 module.exports = {
-    getHost: function getHost(origin) {
+    getHost(origin) {
         return origin.replace(/([^\/:\s])\/.*$/, '$1');
     },
-
     getCookie: function getCookie(str, ckName) {
         if (undefined === ckName || "" === ckName) {
             return "";
