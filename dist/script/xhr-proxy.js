@@ -10,7 +10,7 @@ function inject(urlObj, extraScript) {
     var origin = `${protocol}//${host}`;
     var serverBase = serverUrlObj.protocol + '//' + serverUrlObj.host + serverUrlObj.pathname.slice(0, -4);
     if (window.XMLHttpRequest) {
-        Object.defineProperty(window.navigator, 'userAgent', { writable: true, configurable: true, enumerable: true });
+        Object.prototype.defineProperty && Object.defineProperty(window.navigator, 'userAgent', { writable: true, configurable: true, enumerable: true });
         window.navigator.userAgent = UA;
         var open = window.XMLHttpRequest.prototype.open;
         window.XMLHttpRequest.prototype.open = function (method, url, async, user, password) {
