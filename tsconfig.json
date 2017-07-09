@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["es6"],
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": false,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "experimentalDecorators": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "dist",
+    "dist_raw",
+    "test",
+    "backup"
+  ],
+  "types": [
+    "typePatches"
+  ]
+}
