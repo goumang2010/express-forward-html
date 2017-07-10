@@ -1,6 +1,6 @@
 'use strict';
 import fetch from 'node-fetch-custom';
-import { Request } from 'node-fetch-custom';
+import { Request, Response } from 'node-fetch-custom';
 import { Url } from 'url';
 const R = require('ramda');
 const fs = require('fs');
@@ -15,17 +15,21 @@ const falseFunc = () => false;
 const nodeOptions = {
     rejectUnauthorized: false
 }
+type RequestFilter = (req: Request) => Promise<Request | Response>;
+type ResponseFilter = (res: Response) => Promise<Response>;
 
 
 interface Options {
     prefix: string;
+    requestFilter: RequestFilter;
+    responseFilter: ResponseFilter;
     filterHtml: (html: string, req: Request) => string;
     filterCookie: (cookie: string, req: Request) => string;
     filterStatic: (content: string, req: Request) => string;
     filterAjax: (body: any, req: Request) => string;
     script: string | ((urlObj: CustomURL) => void);
-    isMobileUA: (url: string) => boolean | string;
-    needRedirect: (url: string, req: Request) => boolean;
+    isMobileUA: (url: string, req?: Request) => boolean | string;
+    needRedirect: (url: string, req?: Request) => boolean;
 }
 
 interface CustomURL extends Url {
@@ -57,14 +61,10 @@ const handleError = e => (req, res, next) => {
     console.error(e);
     res.status(e.statusCode || 500).end(`Error happend: ${e.toString()}`);
 }
-const _filterResCookie = str => str.split(/;\s?/).filter(x => !/^\s*domain/i.test(x)).join(';');
-const trimResponseCookie = (headers, cookie = headers.get('set-cookie')) =>
-    (cookie && cookie.split(/,\s?/).map(x => _filterResCookie(x)));
-const appendResponseCookie = (headers, res) => {
-    let cookie = trimResponseCookie(headers);
-    cookie && res.append('Set-Cookie', cookie);
-}
-const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) => (req, res, next) => {
+
+
+
+const forwardHtml = ({ prefix, script, applyCommonFilter, filterHtml }) => async (req, res, next) => {
     let url = req.query.url;
     if (!url) {
         throw (new ForwardError(`You must specify an url to forward html!`, 400));
@@ -82,37 +82,11 @@ const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) =
             'Pragma': 'no-cache'
         }
     };
-    let mobile = isMobileUA(url, req);
-    let UA;
-    if (typeof mobile === 'string') {
-        UA = mobile;
-        mobile = /Mobile|iphone|Android/i.test(mobile);
-    } else if (mobile) {
-        UA = MOBILE_UA;
-    } else {
-        UA = PC_UA;
-    }
-    options.headers['User-Agent'] = UA;
-    if (needRedirect(url, req)) {
-        options['redirect'] = 'manual';
-        // 先请求一次，探查真实地址
-        fetchProcess().then(function (result) {
-            let relocation = result.headers.get('location');
-            if (relocation && (relocation !== url)) {
-                url = relocation;
-                options['redirect'] = 'follow';
-                fetchProcess().then((result) => postProcess(result))
-            } else {
-                postProcess(result);
-            }
-        });
-    } else {
-        fetchProcess().then((result) => postProcess(result))
-    }
 
-    function fetchProcess() {
-        return fetch(encodeURI(url), options, nodeOptions);
-    }
+    const request = new Request(encodeURI(url), options);
+    request['nodeOptions'] = nodeOptions;
+    let response = await applyCommonFilter(request);
+    await postProcess(response);
 
     function postProcess(result) {
         res.status(result.status);
@@ -130,7 +104,7 @@ const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) =
         time.setTime(Date.now() + 86400000);
         // res.append('Set-Cookie', `${COOKIE_KEY}=${encodeURIComponent(url)};expires=${time.toUTCString()}`);
         // 添加自定义脚本
-        Object.assign(urlObj, { mobile, UA, prefix, serverUrlObj });
+        Object.assign(urlObj, { mobile: request['mobile'], UA: request.headers.get('User-Agent'), prefix, serverUrlObj });
         let proxytext = `<script>(${xhrProxy}(${JSON.stringify(urlObj)}, ${script}))</script>`;
         res.append('Content-Type', 'text/html; charset=utf-8');
         res.end(filterHtml(html, urlObj, req)
@@ -141,9 +115,7 @@ const forwardHtml = ({ prefix, script, isMobileUA, needRedirect, filterHtml }) =
         );
     }
 }
-const forwardAjax = (opts: Options) => async (req, res, next) => {
-
-    const { filterCookie } = opts;
+const forwardAjax = ({applyCommonFilter}) => async (req, res, next) => {
     let { method, query, body, headers } = req;
     let { url, referer } = query;
     if (url && referer) {
@@ -155,7 +127,6 @@ const forwardAjax = (opts: Options) => async (req, res, next) => {
     // remove
     headers.origin && (delete headers.origin);
     let newheaders = Object.assign(headers, {
-        'cookie': filterCookie(headers.cookie || '', req),
         'host': referObj.host,
         'referer': encodeURI(referObj.href)
     });
@@ -188,7 +159,8 @@ const forwardAjax = (opts: Options) => async (req, res, next) => {
         option['body'] = req;
     }
     const request = new Request(url, option);
-    let resObj = await fetch(request, option, nodeOptions, true);
+    applyCommonFilter(request)
+    const resObj = await applyCommonFilter(request);
     let resheaders = resObj.headers;
     appendResponseCookie(resheaders, res);
     resheaders.delete('Set-Cookie');
@@ -199,8 +171,8 @@ const forwardAjax = (opts: Options) => async (req, res, next) => {
     res.set(rawheaders);
     resObj.body.pipe(res);
 }
-const forwardStatic = ({ prefix, filterCookie, filterStatic }) => async (req, res, next) => {
-    let { query, headers } = req;
+const forwardStatic = ({ prefix, filterStatic }) => async (req, res, next) => {
+    let { query } = req;
     let method = 'get';
     let url = query.url;
     if (!url) {
@@ -210,7 +182,6 @@ const forwardStatic = ({ prefix, filterCookie, filterStatic }) => async (req, re
     const option = {
         method,
         headers: { host },
-        cookie: filterCookie(headers.cookie || '', req),
         credentials: 'include'
     }
     if (filterStatic) {
@@ -223,16 +194,77 @@ const forwardStatic = ({ prefix, filterCookie, filterStatic }) => async (req, re
         resObj.body.pipe(res);
     }
 }
-const buildOptions = ({
-    prefix = '',
-    isMobileUA = falseFunc,
-    needRedirect = falseFunc,
-    filterHtml = idFunc,
-    filterAjax = idFunc,
-    filterCookie = idFunc,
-    filterStatic,
-    script = () => { }
-}: Partial<Options> = {}) => {
+const combineRequestFilter = ({ isMobileUA = falseFunc, needRedirect = falseFunc, filterCookie, requestFilter = idFunc }: Partial<Options> = {}) => async (req: Request) => {
+    let res = await requestFilter(req);
+    if (res instanceof Response) {
+        return res;
+    } else if (res instanceof Request) {
+        req = res;
+    }
+    const {url} = req;
+    let mobile = isMobileUA(url, req);
+    const UA = (() => {
+        if (typeof mobile === 'string') {
+            let ua = mobile;
+            mobile = /Mobile|iphone|Android/i.test(mobile);
+            return ua;
+        } else if (mobile) {
+            return MOBILE_UA;
+        } else {
+            return PC_UA;
+        }
+    })();
+    req.headers.set('User-Agent', UA);
+    req['mobile'] = mobile;
+
+    if (needRedirect(url, req)) {
+        req.redirect = 'manual'
+        // 先请求一次，探查真实地址
+        let res = await fetch(req, req['extendOption'], req['nodeOption']);
+        let relocation = res.headers.get('location');
+        if (relocation && (relocation !== url)) {
+            req.url = relocation;
+            req.redirect = 'follow';
+        } else {
+            return res;
+        }
+    }
+    if (typeof filterCookie === 'function') {
+        const cookie = req.headers.get('cookie').toString();
+        req.headers.set('cookie', filterCookie(cookie, req));
+    }
+    return req;
+}
+
+const _filterResCookie = str => str.split(/;\s?/).filter(x => !/^\s*domain/i.test(x)).join(';');
+const trimResponseCookie = (headers, cookie = headers.get('set-cookie')) =>
+    (cookie && cookie.split(/,\s?/).map(x => _filterResCookie(x)));
+const appendResponseCookie = (headers, res) => {
+    let cookie = trimResponseCookie(headers);
+    cookie && res.append('Set-Cookie', cookie);
+}
+
+const combineResponseFilter = ({ requestFilter = idFunc }: Partial<Options> = {}) => async (res: Response) => {
+    res = await requestFilter(res);
+    appendResponseCookie(res.headers, res);
+    return res;
+}
+
+const buildFilterImplementer = (requestFilter, ResponseFilter) => async (request: Request, stream?) => {
+    let response = await requestFilter(request);
+    if (response instanceof Request) {
+        response = await fetch(request, {} , request['nodeOptions'], stream);
+    }
+    return (await ResponseFilter(response));
+}
+
+const buildOptions = (opts: Partial<Options> = {}) => {
+    let { 
+        prefix = '',
+        filterHtml = idFunc,
+        filterCookie = idFunc,
+        filterStatic,
+        script = () => {} } = opts;
     if (script) {
         let scriptType = typeof script;
         if (scriptType === 'function') {
@@ -244,7 +276,10 @@ const buildOptions = ({
         script = '';
     }
     prefix !== '' && (prefix.startsWith('/') || (prefix = '/' + prefix));
-    return { prefix, isMobileUA, needRedirect, filterHtml, filterCookie, filterStatic, script }
+    const requestFilter: RequestFilter = combineRequestFilter(opts);
+    const responseFilter: ResponseFilter = combineResponseFilter(opts);
+    const applyCommonFilter = buildFilterImplementer(requestFilter, responseFilter)
+    return { prefix, requestFilter, filterCookie, applyCommonFilter, filterHtml, filterStatic, script }
 }
 const wrapAsyncError = (fn) => (req, res, next) => {
     const routePromise = fn(req, res, next);
