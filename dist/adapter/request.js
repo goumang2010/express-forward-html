@@ -39,5 +39,6 @@ exports.default = function (req) {
     /get|head/i.test(method) || (req['body'] && (opts['body'] = req['body']));
     var fetchReq = new node_fetch_custom_1.Request(encodeURI(url), opts);
     fetchReq['serverHost'] = serverHost;
+    fetchReq['query'] = queryObj;
     return fetchReq;
 };

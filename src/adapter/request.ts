@@ -37,5 +37,6 @@ export default (req: IncomingMessage) => {
     /get|head/i.test(method) || (req['body'] && (opts['body'] = req['body']));
     const fetchReq = new Request(encodeURI(url), opts);
     fetchReq['serverHost'] = serverHost;
+    fetchReq['query'] = queryObj;
     return fetchReq;
 };

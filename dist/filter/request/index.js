@@ -36,9 +36,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var node_fetch_custom_1 = require("node-fetch-custom");
+var fetch = require('node-fetch-custom');
 var constants_1 = require("../../constants");
-var node_fetch_custom_2 = require("node-fetch-custom");
+var node_fetch_custom_1 = require("node-fetch-custom");
 exports.combineRequestFilter = function (_a) {
     var _b = _a === void 0 ? {} : _a, _c = _b.isMobileUA, isMobileUA = _c === void 0 ? constants_1.falseFunc : _c, _d = _b.needRedirect, needRedirect = _d === void 0 ? constants_1.falseFunc : _d, filterCookie = _b.filterCookie, _e = _b.requestFilter, requestFilter = _e === void 0 ? constants_1.idFunc : _e;
     return function (req) { return __awaiter(_this, void 0, void 0, function () {
@@ -48,10 +48,10 @@ exports.combineRequestFilter = function (_a) {
                 case 0: return [4 /*yield*/, requestFilter(req)];
                 case 1:
                     res = _a.sent();
-                    if (res instanceof node_fetch_custom_2.Response) {
+                    if (res instanceof node_fetch_custom_1.Response) {
                         return [2 /*return*/, res];
                     }
-                    else if (res instanceof node_fetch_custom_2.Request) {
+                    else if (res instanceof node_fetch_custom_1.Request) {
                         req = res;
                     }
                     url = req.url;
@@ -73,7 +73,7 @@ exports.combineRequestFilter = function (_a) {
                     req['mobile'] = mobile;
                     if (!needRedirect(url, req)) return [3 /*break*/, 3];
                     req.redirect = 'manual';
-                    return [4 /*yield*/, node_fetch_custom_1.default(req, req['extendOption'], constants_1.nodeOptions, true)];
+                    return [4 /*yield*/, fetch(req, req['extendOption'], constants_1.nodeOptions, true)];
                 case 2:
                     result = _a.sent();
                     relocation = result.headers.get('location');

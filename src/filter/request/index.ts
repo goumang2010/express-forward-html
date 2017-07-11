@@ -1,4 +1,4 @@
-import fetch from 'node-fetch-custom';
+const fetch = require('node-fetch-custom');
 import { Options } from '../../interface';
 import { nodeOptions, idFunc, falseFunc, UAType, UA } from '../../constants';
 import { Request, Response } from 'node-fetch-custom';
