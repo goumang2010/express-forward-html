@@ -34,7 +34,10 @@ exports.default = function (req) {
         headers.delete('host');
     }
     headers.set('credentials', 'include');
-    var fetchReq = new node_fetch_custom_1.Request(encodeURI(url), { method: req.method, body: req['body'], headers: headers });
+    var method = req.method || 'get';
+    var opts = { method: method, headers: headers };
+    /get|head/i.test(method) || (req['body'] && (opts['body'] = req['body']));
+    var fetchReq = new node_fetch_custom_1.Request(encodeURI(url), opts);
     fetchReq['serverHost'] = serverHost;
     return fetchReq;
 };

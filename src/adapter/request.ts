@@ -27,12 +27,15 @@ export default (req: IncomingMessage) => {
     } else if (serverHost) {
         // support local url
         url = urlLib.resolve(`${serverHost}`, url);
-        headers.delete('host');   
+        headers.delete('host');
     } else {
         headers.delete('host');
     }
     headers.set('credentials', 'include');
-    const fetchReq = new Request(encodeURI(url), { method: req.method, body: req['body'], headers });
+    const method = req.method || 'get';
+    const opts = { method, headers };
+    /get|head/i.test(method) || (req['body'] && (opts['body'] = req['body']));
+    const fetchReq = new Request(encodeURI(url), opts);
     fetchReq['serverHost'] = serverHost;
     return fetchReq;
 };
