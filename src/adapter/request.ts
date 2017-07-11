@@ -12,15 +12,27 @@ export default (req: IncomingMessage) => {
         return urlLib.parse(req.url, true).query;
     })();
     let url = queryObj.url;
+    const serverHost = (() => {
+        if (req.headers.host) {
+            let _serverHost = `${req['protocol'] || (req.connection['encrypted'] ? 'https' : 'http')}://${req.headers.host}`;
+            return _serverHost;
+        }
+    })();
     let referer = queryObj.referer;
     if (url && referer) {
         url = urlLib.resolve(referer, url);
         let referObj = urlLib.parse(referer);
         referObj.host && headers.set('host', referObj.host);
         referObj.href && headers.set('referer', encodeURI(referObj.href));
+    } else if (serverHost) {
+        // support local url
+        url = urlLib.resolve(`${serverHost}`, url);
+        headers.delete('host');   
     } else {
         headers.delete('host');
     }
     headers.set('credentials', 'include');
-    return new Request(encodeURI(url), { method: req.method, body: req['body'], headers });
+    const fetchReq = new Request(encodeURI(url), { method: req.method, body: req['body'], headers });
+    fetchReq['serverHost'] = serverHost;
+    return fetchReq;
 };
