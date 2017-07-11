@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@types/node": "^8.0.9",
+    "@types/ramda": "^0.24.2",
     "body-parser": "^1.17.2",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
@@ -28,6 +29,7 @@
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^3.0.0",
     "supertest": "^3.0.0",
+    "ts-node": "^3.2.0",
     "tslint": "^5.5.0",
     "typescript": "^2.4.1"
   },
@@ -40,8 +42,8 @@
     "url": "git://github.com/goumang2010/express-forward-html.git"
   },
   "scripts": {
-    "lint": "./node_modules/.bin/eslint index.js --fix",
-    "build": "./node_modules/.bin/tsc",
+    "lint": "./node_modules/.bin/tslint ./src --fix",
+    "build": "./node_modules/.bin/tsc --rootDir src",
     "build:web": "./node_modules/.bin/rollup -m -c ./test/web/build/config.js",
     "test:s": "cross-env BABEL_ENV=test mocha --compilers js:babel-register test/server/test.js",
     "test:b": "karma start ./test/broswer/karma/index.js",

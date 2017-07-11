@@ -6,7 +6,7 @@
     "target": "es5",
     "sourceMap": false,
     "allowJs": true,
-    "allowSyntheticDefaultImports": true,
+    "allowSyntheticDefaultImports": false,
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
@@ -14,7 +14,7 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "experimentalDecorators": true,
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist"
   },
   "exclude": [
