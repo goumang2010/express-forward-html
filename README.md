@@ -45,6 +45,7 @@ interface Options {
     filterHtml: (html: string, req: Request) => string;
     filterCookie: (cookie: string, req: Request) => string;
     filterStatic: (content: string, req: Request) => string;
+    filterAjax: (body: any, req: Request) => string;
     script: string | ((urlObj: CustomURL) => void);
     isMobileUA: (url: string) => boolean | string;
     needRedirect: (url: string, req: Request) => boolean;
