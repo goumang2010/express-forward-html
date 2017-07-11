@@ -1,21 +1,16 @@
 'use strict';
 import { Options, ParsedOptions } from './interface';
-import { idFunc } from './constants';
 import { handleError } from './error';
 import forwardHtml from './handler/html';
 import forwardAjax from './handler/ajax';
 import forwardStatic from './handler/static';
+import forwardOther from './handler/other';
 import requestAdapter from './adapter/request';
 import responseAdapter from './adapter/response';
 import { buildFilterImplementer, combineRequestFilter, combineResponseFilter } from './filter';
 import * as R from 'ramda';
 const buildOptions = (opts: Partial<Options> = {}): ParsedOptions => {
-    let {
-        prefix = '',
-        filterHtml = idFunc,
-        filterStatic = idFunc,
-        filterAjax,
-        script = () => {} } = opts;
+    let { prefix = '', filterHtml, filterStatic, filterAjax, script = () => {} } = opts;
     if (script) {
         let scriptType = typeof script;
         if (scriptType === 'function') {
@@ -47,6 +42,7 @@ const registerRouter = R.curry((opts: ParsedOptions, router: any) => {
         router.get(`${prefix}/html`, wrapAsyncError(forwardHtml(opts)));
         router.all(`${prefix}/ajax`, wrapAsyncError(forwardAjax(opts)));
         router.get(`${prefix}/static`, wrapAsyncError(forwardStatic(opts)));
+        router.all(`/*`, wrapAsyncError(forwardOther(opts)));
         router.use(handleError);
     } else {
         throw new TypeError('The param is not express instance or router!');
