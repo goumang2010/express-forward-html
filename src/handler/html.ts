@@ -8,18 +8,18 @@ const htmlHandler: Handler = ({ prefix, script, requestAdapter, responseAdapter,
     const finalReq = requestAdapter(req);
     const result = await applyCommonFilter(finalReq);
     const url = finalReq.url;
-    const urlObj = { ...urlLib.parse(url), mobile: finalReq['mobile'], UA: finalReq.headers.get('User-Agent'), prefix };
+    const serverUrlObj = urlLib.parse(finalReq['serverHost'] + req['originalUrl']);
+    const urlObj = { ...urlLib.parse(url), mobile: finalReq['mobile'], UA: finalReq.headers.get('User-Agent'), prefix, serverUrlObj };
     let proxytext = `<script>(${xhrProxy}(${JSON.stringify(urlObj)}, ${script}))</script>`;
     const rawHtml = await result.text();
     const html = filterHtml ? filterHtml(rawHtml, finalReq) : rawHtml;
-    result.headers.has('content-encoding') && result.headers.set('content-encoding', 'plain/text');
-    responseAdapter(result, res);
-    res.end(
-        html.replace('<head>', '<head>' + proxytext)
+    const parsedHtml = html.replace('<head>', '<head>' + proxytext)
             .replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function (m, p1, p2) {
                 return `${p1}="${urlLib.resolve(url, p2)}"`;
-            })
-    );
+            });
+    result.headers.has('content-encoding') && result.headers.set('content-encoding', 'plain/text');
+    responseAdapter(result, res);
+    res.end(parsedHtml);
 };
 
 export default htmlHandler;
