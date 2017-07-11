@@ -1,4 +1,6 @@
-require('babel-register');
+require('ts-node').register({
+	sourceMap: true
+});
 const TestServer = require('../server').default;
 const express = require('express');
 const bodyParser = require('body-parser');

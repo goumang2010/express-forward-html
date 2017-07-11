@@ -30,7 +30,6 @@
             "request": "launch",
             "name": "Launch Web",
             "protocol": "inspector",
-            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/babel-node.cmd",
             "program": "${workspaceRoot}/test/web/app.js",
             "stopOnEntry": false,
             "cwd": "${workspaceRoot}",
