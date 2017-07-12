@@ -28,11 +28,13 @@ const ajaxHandler: Handler = ({ requestAdapter, responseAdapter, applyCommonFilt
     }
     const finalReq = requestAdapter(req);
     const result = await applyCommonFilter(finalReq, !!filterAjax);
-    responseAdapter(result, res);
     if (filterAjax) {
         const text = await result.text();
+        result.headers.delete('content-encoding');
+        responseAdapter(result, res);
         res.end(filterAjax(text, finalReq));
     } else {
+        responseAdapter(result, res);
         result.body.pipe(res);
     }
 };
