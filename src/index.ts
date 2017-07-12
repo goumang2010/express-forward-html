@@ -7,10 +7,11 @@ import forwardStatic from './handler/static';
 import forwardOther from './handler/other';
 import requestAdapter from './adapter/request';
 import responseAdapter from './adapter/response';
+import { applyFilterMap } from './helpers';
 import { buildFilterImplementer, combineRequestFilter, combineResponseFilter } from './filter';
 import * as R from 'ramda';
 const buildOptions = (opts: Partial<Options> = {}): ParsedOptions => {
-    let { prefix = '', filterHtml, filterStatic, filterAjax, script = () => {} } = opts;
+    let { prefix = '', filterHtml, filterStatic, filterAjax, script = () => { } } = opts;
     if (script) {
         let scriptType = typeof script;
         if (scriptType === 'function') {
@@ -23,12 +24,11 @@ const buildOptions = (opts: Partial<Options> = {}): ParsedOptions => {
     } else {
         script = '';
     }
-    
     prefix !== '' && (prefix.startsWith('/') || (prefix = '/' + prefix));
     const requestFilter = combineRequestFilter(opts);
     const responseFilter = combineResponseFilter(opts);
     const applyCommonFilter = buildFilterImplementer(requestFilter, responseFilter);
-    return { prefix, applyCommonFilter, requestAdapter, responseAdapter, filterAjax, filterHtml, filterStatic, script };
+    return { prefix, applyCommonFilter, requestAdapter, responseAdapter, filterAjax: applyFilterMap(filterAjax), filterHtml: applyFilterMap(filterHtml), filterStatic: applyFilterMap(filterStatic), script };
 };
 const wrapAsyncError = (fn) => (req, res, next) => {
     const routePromise = fn(req, res, next);

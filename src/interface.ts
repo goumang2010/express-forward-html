@@ -3,11 +3,17 @@ import { Request as ExpressRequest, Response as ExpressResponse } from 'express'
 import { Url } from 'url';
 export type RequestFilter = (req: FwdRequest) => Promise<FwdRequest | Response>;
 export type ResponseFilter = (res: Response) => Promise<Response>;
-
 export type textTransformer = (content: string, req: FwdRequest) => string;
+export type HtmlFilter = {
+    [regexStr: string]: textTransformer;
+} | textTransformer;
+
+export type StaticFilter = HtmlFilter | textTransformer;
+
+export type AjaxFilter = HtmlFilter | textTransformer;
 
 export interface FwdRequest extends Request {
-    originUrlObj?: Url;
+    originalUrlObj?: Url;
     mobile?: boolean;
 }
 
@@ -20,19 +26,18 @@ export interface Options {
     requestFilter: RequestFilter;
     responseFilter: ResponseFilter;
     filterCookie: textTransformer;
-    filterHtml: textTransformer;
-    filterStatic: textTransformer;
-    filterAjax: (body: any, req: FwdRequest) => string;
+    filterHtml: HtmlFilter;
+    filterStatic: StaticFilter;
+    filterAjax: AjaxFilter;
     script: string | ((urlObj: CustomURL) => void);
     isMobileUA?: (url: string, req?: FwdRequest) => boolean | string;
-    needRedirect?: (url: string, req?: FwdRequest) => boolean;
 }
 
 export interface ParsedOptions {
     prefix: string;
-    filterHtml?: textTransformer;
-    filterStatic?: textTransformer;
-    filterAjax?: (body: any, req: FwdRequest) => string;
+    filterHtml?: (url: string) => textTransformer;
+    filterStatic?: (url: string) => textTransformer;
+    filterAjax?: (url: string) => textTransformer;
     script: string;
     requestAdapter: (x: ExpressRequest) => FwdRequest;
     responseAdapter: (x: FwdResponse, y: ExpressResponse) => void;
