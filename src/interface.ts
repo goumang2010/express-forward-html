@@ -25,7 +25,6 @@ export interface Options {
 
     requestFilter: RequestFilter;
     responseFilter: ResponseFilter;
-    filterCookie: textTransformer;
     filterHtml: HtmlFilter;
     filterStatic: StaticFilter;
     filterAjax: AjaxFilter;

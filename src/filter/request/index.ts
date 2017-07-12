@@ -2,7 +2,7 @@ import { FwdRequest, Options } from '../../interface';
 import { idFunc, falseFunc, UAType, UA } from '../../constants';
 import { Request, Response } from 'node-fetch-custom';
 
-export const combineRequestFilter = ({ isMobileUA = falseFunc, filterCookie, requestFilter = idFunc }: Partial<Options> = {}) => async (req: FwdRequest) => {
+export const combineRequestFilter = ({ isMobileUA = falseFunc, requestFilter = idFunc }: Partial<Options> = {}) => async (req: FwdRequest) => {
     let res = await requestFilter(req);
     if (res instanceof Response) {
         return res;
@@ -24,10 +24,5 @@ export const combineRequestFilter = ({ isMobileUA = falseFunc, filterCookie, req
     })();
     req.headers.set('User-Agent', ua);
     req.mobile = mobile;
-
-    if (typeof filterCookie === 'function') {
-        const cookie = req.headers.get('cookie').toString();
-        req.headers.set('cookie', filterCookie(cookie, req));
-    }    
     return req;
 };
