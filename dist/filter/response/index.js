@@ -40,11 +40,11 @@ var constants_1 = require("../../constants");
 var cookie_1 = require("./cookie");
 var header_1 = require("./header");
 exports.combineResponseFilter = function (_a) {
-    var _b = (_a === void 0 ? {} : _a).requestFilter, requestFilter = _b === void 0 ? constants_1.idFunc : _b;
+    var _b = (_a === void 0 ? {} : _a).responseFilter, responseFilter = _b === void 0 ? constants_1.idFunc : _b;
     return function (res) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, requestFilter(res)];
+                case 0: return [4 /*yield*/, responseFilter(res)];
                 case 1:
                     res = _a.sent();
                     cookie_1.transformCookie(res);

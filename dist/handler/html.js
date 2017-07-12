@@ -47,26 +47,54 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var urlLib = require("url");
 var fs = require("fs");
 var path = require("path");
+var node_fetch_custom_1 = require("node-fetch-custom");
 var xhrProxy = fs.readFileSync(path.resolve(__dirname, '../script/xhr-proxy.js'), { encoding: 'utf8' }).replace("'use strict';", '');
 var htmlHandler = function (_a) {
     var prefix = _a.prefix, script = _a.script, requestAdapter = _a.requestAdapter, responseAdapter = _a.responseAdapter, applyCommonFilter = _a.applyCommonFilter, filterHtml = _a.filterHtml;
     return function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var finalReq, result, url, serverUrlObj, urlObj, proxytext, rawHtml, html, parsedHtml;
+        var _this = this;
+        var finalReq, url, result, serverUrlObj, urlObj, proxytext, rawHtml, html, parsedHtml;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     finalReq = requestAdapter(req);
-                    return [4 /*yield*/, applyCommonFilter(finalReq)];
+                    url = finalReq.url;
+                    return [4 /*yield*/, (function () { return __awaiter(_this, void 0, void 0, function () {
+                            var _result, relocation, newReq_1;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        finalReq.redirect = 'manual';
+                                        return [4 /*yield*/, applyCommonFilter(finalReq)];
+                                    case 1:
+                                        _result = _a.sent();
+                                        relocation = _result.headers.get('location');
+                                        if (!(relocation && (relocation !== url))) return [3 /*break*/, 3];
+                                        newReq_1 = new node_fetch_custom_1.Request(relocation, finalReq);
+                                        // copy other props
+                                        Object.keys(finalReq).forEach(function (x) {
+                                            if (newReq_1[x] == null) {
+                                                newReq_1[x] = finalReq[x];
+                                            }
+                                        });
+                                        newReq_1.redirect = 'follow';
+                                        finalReq = newReq_1;
+                                        url = relocation;
+                                        return [4 /*yield*/, applyCommonFilter(newReq_1)];
+                                    case 2: return [2 /*return*/, (_a.sent())];
+                                    case 3: return [2 /*return*/, _result];
+                                }
+                            });
+                        }); })()];
                 case 1:
                     result = _a.sent();
-                    url = finalReq.url;
-                    serverUrlObj = urlLib.parse(finalReq['serverHost'] + req['originalUrl']);
+                    serverUrlObj = finalReq.originalUrlObj;
                     urlObj = __assign({}, urlLib.parse(url), { mobile: finalReq['mobile'], UA: finalReq.headers.get('User-Agent'), prefix: prefix, serverUrlObj: serverUrlObj });
                     proxytext = "<script>(" + xhrProxy + "(" + JSON.stringify(urlObj) + ", " + script + "))</script>";
                     return [4 /*yield*/, result.text()];
                 case 2:
                     rawHtml = _a.sent();
-                    html = filterHtml ? filterHtml(rawHtml, finalReq) : rawHtml;
+                    html = filterHtml ? filterHtml(url)(rawHtml, finalReq) : rawHtml;
                     parsedHtml = html.replace('<head>', '<head>' + proxytext)
                         .replace(/(href|src)\s*=\s*"\s*((?!http|\/\/|javascript)[^"'\s]+?)\s*"/g, function (m, p1, p2) {
                         return p1 + "=\"" + urlLib.resolve(url, p2) + "\"";

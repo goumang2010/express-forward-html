@@ -52,7 +52,7 @@ var staticHandler = function (_a) {
                     return [4 /*yield*/, result.text()];
                 case 2:
                     text = _a.sent();
-                    res.end(filterStatic ? filterStatic(text, finalReq) : text);
+                    res.end(filterStatic ? filterStatic(finalReq.url)(text, finalReq) : text);
                     return [3 /*break*/, 4];
                 case 3:
                     result.body.pipe(res);

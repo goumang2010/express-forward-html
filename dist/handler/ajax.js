@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var ajaxHandler = function (_a) {
     var requestAdapter = _a.requestAdapter, responseAdapter = _a.responseAdapter, applyCommonFilter = _a.applyCommonFilter, filterAjax = _a.filterAjax;
     return function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var _a, method, headers, body, bodykeys, _i, bodykeys_1, key, oldval, contentType, finalReq, result, text;
+        var _a, method, headers, body, bodykeys, _i, bodykeys_1, key, oldval, contentType, finalReq, result, text, parsedText, result;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -71,20 +71,25 @@ var ajaxHandler = function (_a) {
                         req['body'] = req;
                     }
                     finalReq = requestAdapter(req);
-                    return [4 /*yield*/, applyCommonFilter(finalReq, !!filterAjax)];
+                    if (!filterAjax) return [3 /*break*/, 3];
+                    return [4 /*yield*/, applyCommonFilter(finalReq)];
                 case 1:
                     result = _b.sent();
-                    responseAdapter(result, res);
-                    if (!filterAjax) return [3 /*break*/, 3];
                     return [4 /*yield*/, result.text()];
                 case 2:
                     text = _b.sent();
-                    res.end(filterAjax(text, finalReq));
-                    return [3 /*break*/, 4];
-                case 3:
+                    responseAdapter(result, res);
+                    parsedText = filterAjax(finalReq.url)(text, finalReq);
+                    result.headers.delete('content-encoding');
+                    res.end(parsedText);
+                    return [3 /*break*/, 5];
+                case 3: return [4 /*yield*/, applyCommonFilter(finalReq, true)];
+                case 4:
+                    result = _b.sent();
+                    responseAdapter(result, res);
                     result.body.pipe(res);
-                    _b.label = 4;
-                case 4: return [2 /*return*/];
+                    _b.label = 5;
+                case 5: return [2 /*return*/];
             }
         });
     }); };

@@ -36,13 +36,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var fetch = require('node-fetch-custom');
 var constants_1 = require("../../constants");
 var node_fetch_custom_1 = require("node-fetch-custom");
 exports.combineRequestFilter = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.isMobileUA, isMobileUA = _c === void 0 ? constants_1.falseFunc : _c, _d = _b.needRedirect, needRedirect = _d === void 0 ? constants_1.falseFunc : _d, filterCookie = _b.filterCookie, _e = _b.requestFilter, requestFilter = _e === void 0 ? constants_1.idFunc : _e;
+    var _b = _a === void 0 ? {} : _a, _c = _b.isMobileUA, isMobileUA = _c === void 0 ? constants_1.falseFunc : _c, filterCookie = _b.filterCookie, _d = _b.requestFilter, requestFilter = _d === void 0 ? constants_1.idFunc : _d;
     return function (req) { return __awaiter(_this, void 0, void 0, function () {
-        var res, url, mobile, ua, result, relocation, cookie;
+        var res, url, mobile, ua, cookie;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, requestFilter(req)];
@@ -70,22 +69,7 @@ exports.combineRequestFilter = function (_a) {
                         }
                     })();
                     req.headers.set('User-Agent', ua);
-                    req['mobile'] = mobile;
-                    if (!needRedirect(url, req)) return [3 /*break*/, 3];
-                    req.redirect = 'manual';
-                    return [4 /*yield*/, fetch(req, req['extendOption'], constants_1.nodeOptions, true)];
-                case 2:
-                    result = _a.sent();
-                    relocation = result.headers.get('location');
-                    if (relocation && (relocation !== url)) {
-                        req.url = relocation;
-                        req.redirect = 'follow';
-                    }
-                    else {
-                        return [2 /*return*/, result];
-                    }
-                    _a.label = 3;
-                case 3:
+                    req.mobile = mobile;
                     if (typeof filterCookie === 'function') {
                         cookie = req.headers.get('cookie').toString();
                         req.headers.set('cookie', filterCookie(cookie, req));

@@ -7,6 +7,7 @@ var static_1 = require("./handler/static");
 var other_1 = require("./handler/other");
 var request_1 = require("./adapter/request");
 var response_1 = require("./adapter/response");
+var helpers_1 = require("./helpers");
 var filter_1 = require("./filter");
 var R = require("ramda");
 var buildOptions = function (opts) {
@@ -31,7 +32,7 @@ var buildOptions = function (opts) {
     var requestFilter = filter_1.combineRequestFilter(opts);
     var responseFilter = filter_1.combineResponseFilter(opts);
     var applyCommonFilter = filter_1.buildFilterImplementer(requestFilter, responseFilter);
-    return { prefix: prefix, applyCommonFilter: applyCommonFilter, requestAdapter: request_1.default, responseAdapter: response_1.default, filterAjax: filterAjax, filterHtml: filterHtml, filterStatic: filterStatic, script: script };
+    return { prefix: prefix, applyCommonFilter: applyCommonFilter, requestAdapter: request_1.default, responseAdapter: response_1.default, filterAjax: helpers_1.applyFilterMap(filterAjax), filterHtml: helpers_1.applyFilterMap(filterHtml), filterStatic: helpers_1.applyFilterMap(filterStatic), script: script };
 };
 var wrapAsyncError = function (fn) { return function (req, res, next) {
     var routePromise = fn(req, res, next);
