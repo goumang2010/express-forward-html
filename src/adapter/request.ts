@@ -26,19 +26,20 @@ const requestAdapter: RequestAdapter = (req) => {
         let referObj = urlLib.parse(referer);
         referObj.host && headers.set('host', referObj.host);
         referObj.href && headers.set('referer', encodeURI(referObj.href));
-    } else if (serverHost) {
-        // support local url
-        url = urlLib.resolve(`${serverHost}`, url);
-        headers.delete('host');
     } else {
         headers.delete('host');
+        headers.delete('referer');
+        if (serverHost) {
+            // support local url
+            url = urlLib.resolve(`${serverHost}`, url);
+        }
     }
     headers.set('credentials', 'include');
     const method = req.method || 'get';
     const opts = { method, headers };
     /get|head/i.test(method) || (req['body'] && (opts['body'] = req['body']));
     const fetchReq = new Request(encodeURI(url), opts) as FwdRequest;
-    fetchReq.originUrlObj = urlLib.parse(urlLib.resolve(serverHost, req.originalUrl || req.url), true);
+    fetchReq.originalUrlObj = urlLib.parse(urlLib.resolve(serverHost, req.originalUrl || req.url), true);
     return fetchReq;
 };
 export default requestAdapter;
