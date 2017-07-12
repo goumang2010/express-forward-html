@@ -3,8 +3,8 @@ import { Response } from 'node-fetch-custom';
 import { idFunc } from '../../constants';
 import { transformCookie } from './cookie';
 import { trimHeader } from './header';
-export const combineResponseFilter = ({ requestFilter = idFunc }: Partial<Options> = {}) => async (res: Response) => {
-    res = await requestFilter(res);
+export const combineResponseFilter = ({ responseFilter = idFunc }: Partial<Options> = {}) => async (res: Response) => {
+    res = await responseFilter(res);
     transformCookie(res);
     trimHeader(res);
     return res;

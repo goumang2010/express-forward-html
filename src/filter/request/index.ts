@@ -1,9 +1,8 @@
-const fetch = require('node-fetch-custom');
 import { FwdRequest, Options } from '../../interface';
-import { nodeOptions, idFunc, falseFunc, UAType, UA } from '../../constants';
+import { idFunc, falseFunc, UAType, UA } from '../../constants';
 import { Request, Response } from 'node-fetch-custom';
 
-export const combineRequestFilter = ({ isMobileUA = falseFunc, needRedirect = falseFunc, filterCookie, requestFilter = idFunc }: Partial<Options> = {}) => async (req: FwdRequest) => {
+export const combineRequestFilter = ({ isMobileUA = falseFunc, filterCookie, requestFilter = idFunc }: Partial<Options> = {}) => async (req: FwdRequest) => {
     let res = await requestFilter(req);
     if (res instanceof Response) {
         return res;
@@ -26,21 +25,9 @@ export const combineRequestFilter = ({ isMobileUA = falseFunc, needRedirect = fa
     req.headers.set('User-Agent', ua);
     req.mobile = mobile;
 
-    if (needRedirect(url, req)) {
-        req.redirect = 'manual';
-        // 先请求一次，探查真实地址
-        let result = await fetch(req, {}, nodeOptions, true);
-        let relocation = result.headers.get('location');
-        if (relocation && (relocation !== url)) {
-            req.url = relocation;
-            req.redirect = 'follow';
-        } else {
-            return result;
-        }
-    }
     if (typeof filterCookie === 'function') {
         const cookie = req.headers.get('cookie').toString();
         req.headers.set('cookie', filterCookie(cookie, req));
-    }
+    }    
     return req;
 };

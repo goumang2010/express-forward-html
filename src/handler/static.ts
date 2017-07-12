@@ -5,7 +5,7 @@ const staticHandler: Handler = ({ applyCommonFilter, requestAdapter, responseAda
     responseAdapter(result, res);
     if (filterStatic) {
         let text = await result.text();
-        res.end(filterStatic ? filterStatic(text, finalReq) : text);
+        res.end(filterStatic ? filterStatic(finalReq.url)(text, finalReq) : text);
     } else {
         result.body.pipe(res);
     }
