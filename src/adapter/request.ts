@@ -1,11 +1,12 @@
-import { IncomingMessage } from 'https';
+
+import { FwdRequest, RequestAdapter } from '../interface';
 import { Request, Headers } from 'node-fetch-custom';
 import { ForwardError } from '../error';
 import * as urlLib from 'url';
 
-export default (req: IncomingMessage) => {
+const requestAdapter: RequestAdapter = (req) => {
     const headers = new Headers(req.headers);
-    let queryObj = req['query'] || (() => {
+    let queryObj = req.query || (() => {
         if (!req.url) {
             throw (new ForwardError(`req.url is null, please check the request`, 400));
         }
@@ -14,9 +15,10 @@ export default (req: IncomingMessage) => {
     let url = queryObj.url;
     const serverHost = (() => {
         if (req.headers.host) {
-            let _serverHost = `${req['protocol'] || (req.connection['encrypted'] ? 'https' : 'http')}://${req.headers.host}`;
+            let _serverHost = `${req['protocol'] || (req.connection['encrypted'] ? 'https' : 'http')}://${req.get('host') || req.headers.host}`;
             return _serverHost;
         }
+        return '';
     })();
     let referer = queryObj.referer;
     if (url && referer) {
@@ -35,8 +37,8 @@ export default (req: IncomingMessage) => {
     const method = req.method || 'get';
     const opts = { method, headers };
     /get|head/i.test(method) || (req['body'] && (opts['body'] = req['body']));
-    const fetchReq = new Request(encodeURI(url), opts);
-    fetchReq['serverHost'] = serverHost;
-    fetchReq['query'] = queryObj;
+    const fetchReq = new Request(encodeURI(url), opts) as FwdRequest;
+    fetchReq.originUrlObj = urlLib.parse(urlLib.resolve(serverHost, req.originalUrl || req.url), true);
     return fetchReq;
 };
+export default requestAdapter;

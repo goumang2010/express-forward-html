@@ -1,11 +1,19 @@
 import { Request, Response } from 'node-fetch-custom';
-import { IncomingMessage, ServerResponse } from 'http';
+import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import { Url } from 'url';
-export type RequestFilter = (req: Request) => Promise<Request | Response>;
+export type RequestFilter = (req: FwdRequest) => Promise<FwdRequest | Response>;
 export type ResponseFilter = (res: Response) => Promise<Response>;
 
-export type textTransformer = (content: string, req: Request) => string;
+export type textTransformer = (content: string, req: FwdRequest) => string;
 
+export interface FwdRequest extends Request {
+    originUrlObj?: Url;
+    mobile?: boolean;
+}
+
+export interface FwdResponse extends Response {
+    // originUrlObj?: Url;
+}
 export interface Options {
     prefix: string;
 
@@ -14,25 +22,26 @@ export interface Options {
     filterCookie: textTransformer;
     filterHtml: textTransformer;
     filterStatic: textTransformer;
-    filterAjax: (body: any, req: Request) => string;
+    filterAjax: (body: any, req: FwdRequest) => string;
     script: string | ((urlObj: CustomURL) => void);
-    isMobileUA?: (url: string, req?: Request) => boolean | string;
-    needRedirect?: (url: string, req?: Request) => boolean;
+    isMobileUA?: (url: string, req?: FwdRequest) => boolean | string;
+    needRedirect?: (url: string, req?: FwdRequest) => boolean;
 }
 
 export interface ParsedOptions {
     prefix: string;
     filterHtml?: textTransformer;
     filterStatic?: textTransformer;
-    filterAjax?: (body: any, req: Request) => string;
+    filterAjax?: (body: any, req: FwdRequest) => string;
     script: string;
-    requestAdapter: (x: IncomingMessage) => Request;
-    responseAdapter: (x: Response, y: ServerResponse) => void;
-    applyCommonFilter: (x: Request, stream?: boolean) => Promise<Response>;
+    requestAdapter: (x: ExpressRequest) => FwdRequest;
+    responseAdapter: (x: FwdResponse, y: ExpressResponse) => void;
+    applyCommonFilter: (x: FwdRequest, stream?: boolean) => Promise<FwdResponse>;
 }
 
-export type Handler = (x: ParsedOptions) => (req: IncomingMessage, res: ServerResponse, next: any) => Promise<void>;
-
+export type Handler = (x: ParsedOptions) => (req: ExpressRequest, res: ExpressResponse, next: any) => Promise<void>;
+export type RequestAdapter = (req: ExpressRequest) => FwdRequest;
+export type ResponseAdapter = (res: FwdResponse, NodeRes: ExpressResponse) => void;
 export interface CustomURL extends Url {
     mobile: boolean;
     serverUrlObj: Url;

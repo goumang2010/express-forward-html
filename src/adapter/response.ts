@@ -1,9 +1,10 @@
-import { ServerResponse } from 'https';
-import { Response } from 'node-fetch-custom';
+import { ResponseAdapter } from '../interface';
 
-export default (res: Response, nodeRes: ServerResponse) => {
+const responseAdapter: ResponseAdapter = (res, nodeRes) => {
     nodeRes.statusCode = res.status;
     res.headers.forEach((val, name) => {
         val.split(/,\s?/).map(v => nodeRes.setHeader(name, v));
     });
 };
+
+export default responseAdapter;
