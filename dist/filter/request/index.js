@@ -39,9 +39,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var constants_1 = require("../../constants");
 var node_fetch_custom_1 = require("node-fetch-custom");
 exports.combineRequestFilter = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.isMobileUA, isMobileUA = _c === void 0 ? constants_1.falseFunc : _c, filterCookie = _b.filterCookie, _d = _b.requestFilter, requestFilter = _d === void 0 ? constants_1.idFunc : _d;
+    var _b = _a === void 0 ? {} : _a, _c = _b.isMobileUA, isMobileUA = _c === void 0 ? constants_1.falseFunc : _c, _d = _b.requestFilter, requestFilter = _d === void 0 ? constants_1.idFunc : _d;
     return function (req) { return __awaiter(_this, void 0, void 0, function () {
-        var res, url, mobile, ua, cookie;
+        var res, url, mobile, ua;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, requestFilter(req)];
@@ -70,10 +70,6 @@ exports.combineRequestFilter = function (_a) {
                     })();
                     req.headers.set('User-Agent', ua);
                     req.mobile = mobile;
-                    if (typeof filterCookie === 'function') {
-                        cookie = req.headers.get('cookie').toString();
-                        req.headers.set('cookie', filterCookie(cookie, req));
-                    }
                     return [2 /*return*/, req];
             }
         });

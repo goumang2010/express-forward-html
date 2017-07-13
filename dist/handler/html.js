@@ -45,49 +45,33 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var urlLib = require("url");
+var querystring = require("querystring");
 var fs = require("fs");
 var path = require("path");
-var node_fetch_custom_1 = require("node-fetch-custom");
 var xhrProxy = fs.readFileSync(path.resolve(__dirname, '../script/xhr-proxy.js'), { encoding: 'utf8' }).replace("'use strict';", '');
 var htmlHandler = function (_a) {
     var prefix = _a.prefix, script = _a.script, requestAdapter = _a.requestAdapter, responseAdapter = _a.responseAdapter, applyCommonFilter = _a.applyCommonFilter, filterHtml = _a.filterHtml;
     return function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var _this = this;
-        var finalReq, url, result, serverUrlObj, urlObj, proxytext, rawHtml, html, parsedHtml;
+        var finalReq, url, result, relocation, query, serverUrlObj, urlObj, proxytext, rawHtml, html, parsedHtml;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     finalReq = requestAdapter(req);
                     url = finalReq.url;
-                    return [4 /*yield*/, (function () { return __awaiter(_this, void 0, void 0, function () {
-                            var _result, relocation, newReq_1;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        finalReq.redirect = 'manual';
-                                        return [4 /*yield*/, applyCommonFilter(finalReq)];
-                                    case 1:
-                                        _result = _a.sent();
-                                        relocation = _result.headers.get('location');
-                                        if (!(relocation && (relocation !== url))) return [3 /*break*/, 3];
-                                        newReq_1 = new node_fetch_custom_1.Request(relocation, finalReq);
-                                        // copy other props
-                                        Object.keys(finalReq).forEach(function (x) {
-                                            if (newReq_1[x] == null) {
-                                                newReq_1[x] = finalReq[x];
-                                            }
-                                        });
-                                        newReq_1.redirect = 'follow';
-                                        finalReq = newReq_1;
-                                        url = relocation;
-                                        return [4 /*yield*/, applyCommonFilter(newReq_1)];
-                                    case 2: return [2 /*return*/, (_a.sent())];
-                                    case 3: return [2 /*return*/, _result];
-                                }
-                            });
-                        }); })()];
+                    finalReq.redirect = 'manual';
+                    return [4 /*yield*/, applyCommonFilter(finalReq)];
                 case 1:
                     result = _a.sent();
+                    relocation = result.headers.get('location');
+                    if (relocation && (relocation !== url)) {
+                        if (finalReq.originalUrlObj) {
+                            query = Object.assign({}, finalReq.originalUrlObj.query, { url: relocation });
+                            finalReq.originalUrlObj.search = '?' + querystring.stringify(query);
+                            res.writeHead(302, { Location: urlLib.format(finalReq.originalUrlObj) });
+                            res.end();
+                            return [2 /*return*/];
+                        }
+                    }
                     serverUrlObj = finalReq.originalUrlObj;
                     urlObj = __assign({}, urlLib.parse(url), { mobile: finalReq['mobile'], UA: finalReq.headers.get('User-Agent'), prefix: prefix, serverUrlObj: serverUrlObj });
                     proxytext = "<script>(" + xhrProxy + "(" + JSON.stringify(urlObj) + ", " + script + "))</script>";
