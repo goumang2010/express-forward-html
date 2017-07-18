@@ -1,4 +1,4 @@
-import { Request, Response } from 'node-fetch-custom';
+import { Request, Response } from 'node-fetch-sp';
 import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import { Url } from 'url';
 export type RequestFilter = (req: FwdRequest) => Promise<FwdRequest | Response>;

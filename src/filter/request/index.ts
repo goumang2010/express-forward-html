@@ -1,6 +1,6 @@
 import { FwdRequest, Options } from '../../interface';
 import { idFunc, falseFunc, UAType, UA } from '../../constants';
-import { Request, Response } from 'node-fetch-custom';
+import { Request, Response } from 'node-fetch-sp';
 
 export const combineRequestFilter = ({ isMobileUA = falseFunc, requestFilter = idFunc }: Partial<Options> = {}) => async (req: FwdRequest) => {
     let res = await requestFilter(req);

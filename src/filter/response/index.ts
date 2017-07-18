@@ -1,5 +1,5 @@
 import { Options } from '../../interface';
-import { Response } from 'node-fetch-custom';
+import { Response } from 'node-fetch-sp';
 import { idFunc } from '../../constants';
 import { transformCookie } from './cookie';
 import { trimHeader } from './header';

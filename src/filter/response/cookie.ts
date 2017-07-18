@@ -1,4 +1,4 @@
-import { Response } from 'node-fetch-custom';
+import { Response } from 'node-fetch-sp';
 const filterResCookie = str => str.split(/;\s?/).filter(x => !/^\s*domain/i.test(x)).join(';');
 const trimResponseCookie = cookie => (cookie && cookie.map(x => filterResCookie(x)));
 export const transformCookie = (res: Response) => {

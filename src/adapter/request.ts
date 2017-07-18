@@ -1,6 +1,6 @@
 
 import { FwdRequest, RequestAdapter } from '../interface';
-import { Request, Headers } from 'node-fetch-custom';
+import { Request, Headers } from 'node-fetch-sp';
 import { ForwardError } from '../error';
 import * as urlLib from 'url';
 

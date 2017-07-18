@@ -52,7 +52,7 @@
     "test:web": "node ./test/web/app.js"
   },
   "dependencies": {
-    "node-fetch-custom": "^1.2.0",
+    "node-fetch-sp": "git+ssh://git@gitlab.intra.gomeplus.com:21987/bdc-adev/node-fetch-sp.git#v1.0.1",
     "ramda": "^0.24.1"
   }
 }

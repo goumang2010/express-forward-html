@@ -1,6 +1,6 @@
-const fetch = require('node-fetch-custom');
+const fetch = require('node-fetch-sp');
 import { RequestFilter, ResponseFilter } from '../interface';
-import { Request, Response } from 'node-fetch-custom';
+import { Request, Response } from 'node-fetch-sp';
 import { nodeOptions } from '../constants';
 export * from './request';
 export * from './response';
