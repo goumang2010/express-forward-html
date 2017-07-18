@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var node_fetch_custom_1 = require("node-fetch-custom");
+var node_fetch_sp_1 = require("node-fetch-sp");
 var error_1 = require("../error");
 var urlLib = require("url");
 var requestAdapter = function (req) {
-    var headers = new node_fetch_custom_1.Headers(req.headers);
+    var headers = new node_fetch_sp_1.Headers(req.headers);
     var queryObj = req.query || (function () {
         if (!req.url) {
             throw (new error_1.ForwardError("req.url is null, please check the request", 400));
@@ -38,7 +38,7 @@ var requestAdapter = function (req) {
     var method = req.method || 'get';
     var opts = { method: method, headers: headers };
     /get|head/i.test(method) || (req['body'] && (opts['body'] = req['body']));
-    var fetchReq = new node_fetch_custom_1.Request(encodeURI(url), opts);
+    var fetchReq = new node_fetch_sp_1.Request(encodeURI(url), opts);
     fetchReq.originalUrlObj = urlLib.parse(urlLib.resolve(serverHost, req.originalUrl || req.url), true);
     return fetchReq;
 };

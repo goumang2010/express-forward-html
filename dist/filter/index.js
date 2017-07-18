@@ -39,8 +39,8 @@ function __export(m) {
 }
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var fetch = require('node-fetch-custom');
-var node_fetch_custom_1 = require("node-fetch-custom");
+var fetch = require('node-fetch-sp');
+var node_fetch_sp_1 = require("node-fetch-sp");
 var constants_1 = require("../constants");
 __export(require("./request"));
 __export(require("./response"));
@@ -51,7 +51,7 @@ exports.buildFilterImplementer = function (requestFilter, responseFilter) { retu
             case 0: return [4 /*yield*/, requestFilter(request)];
             case 1:
                 response = _a.sent();
-                if (!(response instanceof node_fetch_custom_1.Request)) return [3 /*break*/, 3];
+                if (!(response instanceof node_fetch_sp_1.Request)) return [3 /*break*/, 3];
                 return [4 /*yield*/, fetch(request, {}, constants_1.nodeOptions, stream)];
             case 2:
                 response = _a.sent();

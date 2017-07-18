@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var constants_1 = require("../../constants");
-var node_fetch_custom_1 = require("node-fetch-custom");
+var node_fetch_sp_1 = require("node-fetch-sp");
 exports.combineRequestFilter = function (_a) {
     var _b = _a === void 0 ? {} : _a, _c = _b.isMobileUA, isMobileUA = _c === void 0 ? constants_1.falseFunc : _c, _d = _b.requestFilter, requestFilter = _d === void 0 ? constants_1.idFunc : _d;
     return function (req) { return __awaiter(_this, void 0, void 0, function () {
@@ -47,10 +47,10 @@ exports.combineRequestFilter = function (_a) {
                 case 0: return [4 /*yield*/, requestFilter(req)];
                 case 1:
                     res = _a.sent();
-                    if (res instanceof node_fetch_custom_1.Response) {
+                    if (res instanceof node_fetch_sp_1.Response) {
                         return [2 /*return*/, res];
                     }
-                    else if (res instanceof node_fetch_custom_1.Request) {
+                    else if (res instanceof node_fetch_sp_1.Request) {
                         req = res;
                     }
                     url = req.url;
